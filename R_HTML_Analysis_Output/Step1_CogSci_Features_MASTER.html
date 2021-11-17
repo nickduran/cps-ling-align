@@ -181,10 +181,10 @@ pre code {
 <h4>Step 1: Import main data files and select relevant variables and combine into master datasheet</h4>
 <pre class="r"><code>library(tidyverse)
 library(pander)</code></pre>
-<pre class="r"><code>PennPOS_keep = read.csv(&quot;ALIGN_OUTPUT/PennPOS_keep_T2T.txt&quot;, sep=&quot;\t&quot;)
-StanPOS_keep = read.csv(&quot;ALIGN_OUTPUT/StanPOS_keep_T2T.txt&quot;, sep=&quot;\t&quot;)
-PennPOS_remove = read.csv(&quot;ALIGN_OUTPUT/PennPOS_remove_T2T.txt&quot;, sep=&quot;\t&quot;)
-StanPOS_remove = read.csv(&quot;ALIGN_OUTPUT/StanPOS_remove_T2T.txt&quot;, sep=&quot;\t&quot;)</code></pre>
+<pre class="r"><code>PennPOS_keep = read.csv(&quot;../Data/ALIGN_Output/PennPOS_keep_T2T.txt&quot;, sep=&quot;\t&quot;)
+StanPOS_keep = read.csv(&quot;../Data/ALIGN_Output/StanPOS_keep_T2T.txt&quot;, sep=&quot;\t&quot;)
+PennPOS_remove = read.csv(&quot;../Data/ALIGN_Output/PennPOS_remove_T2T.txt&quot;, sep=&quot;\t&quot;)
+StanPOS_remove = read.csv(&quot;../Data/ALIGN_Output/StanPOS_remove_T2T.txt&quot;, sep=&quot;\t&quot;)</code></pre>
 <pre class="r"><code>PennPOS_keep = PennPOS_keep %&gt;% select(condition_info, partner_direction, time, utterance_length1, utterance_length2, 
                                lexical_lem1, lexical_lem2, lexical_lem3, lexical_tok1, lexical_tok2, lexical_tok3, 
                                syntax_penn_lem2, syntax_penn_tok2, syntax_penn_lem3, syntax_penn_tok3, 
@@ -204,7 +204,7 @@ mergeremove = left_join(PennPOS_remove,StanPOS_remove)</code></pre>
 </div>
 <div id="step-2-clean-up-for-variable-creation-relabeling-for-readability-etc." class="section level4">
 <h4>Step 2: Clean-up for variable creation, relabeling for readability, etc.)</h4>
-<pre class="r"><code>source(&quot;Step1_helper.R&quot;)
+<pre class="r"><code>source(&quot;../R_Helper/Step1_helper.R&quot;)
 df = cleanup(df.merge)</code></pre>
 <ul>
 <li><p>Relies heavily on “Step1_helper.R.” This code performs many of the more mundane tasks and imports the following files to integrate necessary variables</p>
@@ -365,7 +365,7 @@ pander(head(df_composite[,c(1:6,17:21)]))</code></pre>
 </table>
 <pre class="r"><code>pander(names(df_composite))</code></pre>
 <p><em>Team</em>, <em>School</em>, <em>Block</em>, <em>Concept</em>, <em>Goal</em>, <em>Level</em>, <em>trophy</em>, <em>level_duration</em>, <em>relative_start_time</em>, <em>revisited</em>, <em>speaker_target</em>, <em>aligner_score</em>, <em>aligner_role</em>, <em>utter_order</em>, <em>utterlen_target</em>, <em>utterlen_aligner</em>, <em>semantic</em>, <em>lexical</em>, <em>syn2nd</em>, <em>syn3nd</em> and <em>syntax</em></p>
-<pre class="r"><code># write.csv(df_composite, &quot;Step1_PrepareFeatures.csv&quot;, row.names=FALSE)</code></pre>
+<pre class="r"><code>write.csv(df_composite, &quot;../Data/Step1_PrepareFeatures.csv&quot;, row.names=FALSE)</code></pre>
 </div>
 </div>
 

@@ -72,54 +72,54 @@ library(strengejacke)
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-tab_model(clmm_lex) 
+# tab_model(clmm_lex) 
 ```
 
 Interpretation: output is odds ratios, values above 1 indicate a greater likelihood of receiving a trophy, values below 1 indicate less likelihood of receiving a trophy 
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-# tab_model(clmm_lex,
-#           show.ci = 0.95, #FALSE
-#           order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
-#           pred.labels = c("center(lexical)"="Lexical", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "center(lexical):center(ordering_prop)"="Lexical * Order"),
-#           # rm.terms = c("0|1", "1|2", "Block.l.Q"),
-#           # title = "",
-#           digits = 3,
-#           digits.re = 3,
-#           dv.labels = c("Trophy"),
-#           show.re.var = TRUE,
-#           use.viewer = TRUE)
+tab_model(clmm_lex,
+          show.ci = 0.95, #FALSE
+          order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
+          pred.labels = c("center(lexical)"="Lexical", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "revisitedreattempt" = "Revisit [yes]", "center(lexical):center(ordering_prop)"="Lexical * Order"),
+          rm.terms = c("0|1", "1|2", "Block.l.Q"),
+          # title = "",
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = TRUE,
+          use.viewer = TRUE)
 ```
 
 #### Step 4: SYNTAX
 
-```{r}
-clmm_syn <- clmm(as.factor(trophyNum) ~ center(syn2nd)*center(ordering_prop) + 
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+clmm_syn <- clmm(as.factor(trophyNum) ~ center(syntax)*center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = "logit")
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-tab_model(clmm_syn) 
+# tab_model(clmm_syn) 
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-# tab_model(clmm_syn,
-#           show.ci = 0.95, #FALSE
-#           order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
-#           pred.labels = c("center(syn2nd)"="Syntactic", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "center(syn2nd):center(ordering_prop)"="Syntactic * Order"),
-#           # rm.terms = c("0|1", "1|2", "Block.l.Q"),
-#           # title = "",
-#           digits = 3,
-#           digits.re = 3,
-#           dv.labels = c("Trophy"),
-#           show.re.var = TRUE,
-#           use.viewer = TRUE)
+tab_model(clmm_syn,
+          show.ci = 0.95, #FALSE
+          order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
+          pred.labels = c("center(syntax)"="Syntax", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "revisitedreattempt" = "Revisit [yes]", "center(syntax):center(ordering_prop)"="Syntax * Order"),
+          rm.terms = c("0|1", "1|2", "Block.l.Q"),
+          # title = "",
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = TRUE,
+          use.viewer = TRUE)
 ```
 
 #### Step 5: SEMANTIC
 
-```{r}
+```{r, warning=FALSE, message=FALSE, error=FALSE}
 ## something to note with semantic is there are ~1700 rows/utterances that have NA values because one of the utterances must contain words not in the semantic space
 
 clmm_sem <- clmm(as.factor(trophyNum) ~ center(semantic)*center(ordering_prop) + 
@@ -128,21 +128,21 @@ clmm_sem <- clmm(as.factor(trophyNum) ~ center(semantic)*center(ordering_prop) +
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-tab_model(clmm_sem) 
+# tab_model(clmm_sem) 
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-# tab_model(clmm_sem,
-#           show.ci = 0.95, #FALSE
-#           order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
-#           pred.labels = c("center(semantic)"="Semantic", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "center(semantic):center(ordering_prop)"="Semantic * Order"),
-#           # rm.terms = c("0|1", "1|2", "Block.l.Q"),
-#           # title = "",
-#           digits = 3,
-#           digits.re = 3,
-#           dv.labels = c("Trophy"),
-#           show.re.var = TRUE,
-#           use.viewer = TRUE)
+tab_model(clmm_sem,
+          show.ci = 0.95, #FALSE
+          order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
+          pred.labels = c("center(semantic)"="Semantic", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "revisitedreattempt" = "Revisit [yes]", "center(semantic):center(ordering_prop)"="Semantic * Order"),
+          rm.terms = c("0|1", "1|2", "Block.l.Q"),
+          # title = "",
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = TRUE,
+          use.viewer = TRUE)
 ```
 
 #### Step 3: Together (all variables)
@@ -155,7 +155,7 @@ tab_model(clmm_sem)
 
 
 ```{r}
-clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syn2nd) + center(semantic))*center(ordering_prop) + 
+clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = "logit")
 ```

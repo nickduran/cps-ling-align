@@ -33,38 +33,41 @@ The files in the **R_HTML_Analysis_Output** folder contains easy-to-read formatt
 > - http://dynamicog.org/...
 > - http://dynamicog.org/...
 
-## Stat R Helper Files
+## Stat R Helper Files (.R)
 
 The files in the **R_Helper** folder contain R scripts imported by the main .Rmd files to do a series of mundane clean-up and data prep tasks
 
 > **Relevant Files:**
 > - **Step1_helper.R**
->   - Something here
 > - **Step3_helper.R**
->   - Something here
 
 ## Data (.CSV and .TXT)
 
-The files in the **Data** folder contain the raw (from ALIGN) and processed data (from .Rmd) to compute analyses
+The files in the **Data** folder contain the raw (from ALIGN) and processed data (from .Rmd) to compute analyses.
 
 > **Relevant Folder: RAW**
 > - **ALIGN_Output**
->   - Something here
 
 > **Relevant Files: PREPPED**
 > - **Step1_PrepareFeatures.csv**
->   - Something here
+>   - Prepped output from running "Step1_CogSci_Features_MASTER.Rmd"
 >   - **Step2_Optional_IndividDiff.csv**
->   - Something here
+>   - Prepped output from running "Step2_Optional_IndividDiff_MASTER.Rmd"
 
-## Accompanying Datasheets for Building New Variables
+## Accompanying Datasheets for Building New Variables (.CSV)
 
 The files in the **Accompanying_Data** folder contain additional datasheets necessary to build out the ALIGN raw data and to add task/individual difference variables. 
 
 > **Relevant Folders/Files:**
 > - **Step1_FilesToIntegrate**
->   - Something here
->       - Something here
+>   - CPS2_Teams.csv
+>   - Levels_PP_Logs_Lab_Before_Split_by_Trophy.csv
+>   - SWITCH_PARTICIPANTS.csv
+
 > - **Step2_FilesToIntegrate**
->   - Something here
->       - Something here
+>   - person_block.csv
+>   - person.csv
+
+## Data codebook and variable descriptions 
+
+> - **NOT ADDED YET**
