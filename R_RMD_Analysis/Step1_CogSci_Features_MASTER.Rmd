@@ -22,11 +22,10 @@ library(pander)
 ```
 
 ```{r}
-
-PennPOS_keep = read.csv("ALIGN_OUTPUT/PennPOS_keep_T2T.txt", sep="\t")
-StanPOS_keep = read.csv("ALIGN_OUTPUT/StanPOS_keep_T2T.txt", sep="\t")
-PennPOS_remove = read.csv("ALIGN_OUTPUT/PennPOS_remove_T2T.txt", sep="\t")
-StanPOS_remove = read.csv("ALIGN_OUTPUT/StanPOS_remove_T2T.txt", sep="\t")
+PennPOS_keep = read.csv("../Data/ALIGN_Output/PennPOS_keep_T2T.txt", sep="\t")
+StanPOS_keep = read.csv("../Data/ALIGN_Output/StanPOS_keep_T2T.txt", sep="\t")
+PennPOS_remove = read.csv("../Data/ALIGN_Output/PennPOS_remove_T2T.txt", sep="\t")
+StanPOS_remove = read.csv("../Data/ALIGN_Output/StanPOS_remove_T2T.txt", sep="\t")
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
@@ -58,7 +57,7 @@ df.merge = left_join(mergekeep,mergeremove)
 #### Step 2: Clean-up for variable creation, relabeling for readability, etc.)
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-source("Step1_helper.R")
+source("../R_Helper/Step1_helper.R")
 df = cleanup(df.merge)
 ```
 
@@ -92,7 +91,7 @@ pander(names(df_composite))
 ```
 
 ```{r}
-# write.csv(df_composite, "Step1_PrepareFeatures.csv", row.names=FALSE)
+write.csv(df_composite, "../Data/Step1_PrepareFeatures.csv", row.names=FALSE)
 ```
 
 

@@ -20,7 +20,7 @@ library(pander)
 # **person.csv contains the following which is most relevant for us**:
 #   + see: https://docs.google.com/document/d/1ihz2GNXj3g9yaopu1xGD-7x9CEW9qwwCRkWE98o_9rM/edit#
 
-person = read.csv('Step2_FilesToIntegrate/person.csv', sep=",") 
+person = read.csv('Accompanying_Data/Step2_FilesToIntegrate/person.csv', sep=",") 
 person = person %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
   select(-userID)
 person = person %>% select(c(2, 57, 1, 58, 59, everything()), -school) %>% rename(School_Team = "team")
@@ -110,7 +110,7 @@ individ_measures1 = person %>% select(School_Team, School, Team, participant, Ph
 # **person_block.csv contains the following which is most relevant for us**:
 #   + see: https://docs.google.com/document/d/1ihz2GNXj3g9yaopu1xGD-7x9CEW9qwwCRkWE98o_9rM/edit#
 
-personblock = read.csv('Step2_FilesToIntegrate/person_block.csv', sep=",")
+personblock = read.csv('Accompanying_Data/Step2_FilesToIntegrate/person_block.csv', sep=",")
 personblock = personblock %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
   select(-userID)
 individ_measures2 = personblock %>% select(c(2, 26, 1, 3, 27, 28, 10, 18, -school)) %>% rename(School_Team = "team") %>% filter(Block == "Transfer") %>% select(-Block)
@@ -131,10 +131,10 @@ master3 = left_join(master2, gendem)
 ```{r}
 master3 = master3 %>% select(-School_Team) %>% rename(aligner_score = "participant")
 
-compositeLing_role = read.csv("Step1_PrepareFeatures.csv", header=TRUE, sep=",")
+compositeLing_role = read.csv("Data/Step1_PrepareFeatures.csv", header=TRUE, sep=",")
 
 compositeLing_role =  left_join(compositeLing_role, master3)
-write.csv(compositeLing_role, "Step2_Optional_IndividDiff.csv", row.names=FALSE)
+write.csv(compositeLing_role, "Data/Step2_Optional_IndividDiff.csv", row.names=FALSE)
 
 ```
 

@@ -7,7 +7,7 @@ N Duran, A. Paige, S D'Mello. Cognitive Science.
 >   - Also, accompanying the HTML output is the executed Rmd source code that reproduces results reported in manuscript   
 > - Data codebook and variable descriptions used in source code to generate analysis (NOT ADDED YET)
 
-## R source code (.Rmd)
+## R data analysis code (.Rmd)
 
 Each file contains the sequence of steps in R to generate the results, tables, and figures as reported in the manuscript. Detailed notes and annotations are included. Complete replication possible with access to the available source data files. 
 
@@ -23,7 +23,7 @@ Each file contains the sequence of steps in R to generate the results, tables, a
 > - **Step3_CogSci_Descriptives_MASTER.Rmd**
 >   - Notebook contains code for computing level stats on relationship between # of turns, trophy completions, block, and verbosity
 
-## R source output (.HTML)
+## R data analysis output (.HTML)
 
 To view in web browser, please right-click on each file below to open in a new tab or window. 
 
@@ -40,18 +40,18 @@ To view in web browser, please right-click on each file below to open in a new t
 
 > **Relevant Files:**
 
-## Input Data (.CSV and .TXT)
+## Data (.CSV and .TXT)
 
 Something here... 
+
+> **Relevant Folder: RAW**
+> - **ALIGN_OUTPUT**
+>   - Something here
 
 > **Relevant Files: CLEAN**
 > - **Step1_PrepareFeatures.csv**
 >   - Something here
 >   - **Step2_Optional_IndividDiff.csv**
->   - Something here
-
-> **Relevant Folder: RAW**
-> - **ALIGN_OUTPUT**
 >   - Something here
 
 ## Accompanying Datasheets for Building New Variables

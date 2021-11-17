@@ -38,7 +38,7 @@ cleanup = function(df) {
   
 
   ## remember, this is the master sheet for all levels (should include all of ALIGN plus extras)
-  getswitched = read.csv('Step1_FilesToIntegrate/SWITCH_PARTICIPANTS.csv', sep=",") %>% rename(Cond = Block) %>% mutate(Cond = gsub("WU", "Warmup", Cond))
+  getswitched = read.csv('../Accompanying_Data/Step1_FilesToIntegrate/SWITCH_PARTICIPANTS.csv', sep=",") %>% rename(Cond = Block) %>% mutate(Cond = gsub("WU", "Warmup", Cond))
 
   df1 = df1 %>% mutate(partner_direction = gsub(":", "", partner_direction), firstp = word(partner_direction, 1, sep=">"), secondp = word(partner_direction, 2, sep=">")) %>%
     select(-partner_direction)
@@ -77,7 +77,7 @@ cleanup = function(df) {
   
   
   
-  teams = read.csv('Step1_FilesToIntegrate/CPS2_Teams.csv', sep=",") 
+  teams = read.csv('../Accompanying_Data/Step1_FilesToIntegrate/CPS2_Teams.csv', sep=",") 
   teams$Warmup = "Warmup"
   teams$ExpBlock1 = "ExpBlock1"
   teams$ExpBlock2 = "ExpBlock2"
@@ -128,7 +128,7 @@ cleanup = function(df) {
   
   
   
-  trophies = read.csv('Step1_FilesToIntegrate/Levels_PP_Logs_Lab_Before_Split_by_Trophy.csv', sep=",") 
+  trophies = read.csv('../Accompanying_Data/Step1_FilesToIntegrate/Levels_PP_Logs_Lab_Before_Split_by_Trophy.csv', sep=",") 
   trophies2 = trophies %>% 
     mutate(School = word(team, 1, sep="-"), Team = word(team, 2, sep="-")) %>% select(-team, -school) %>%
     rename(Block = block, Concept = concept, Level = level, Goal = manipulation, Revisited = level_attempt) %>%
