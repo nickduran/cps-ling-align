@@ -1,0 +1,194 @@
+---
+title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2"
+author: "Nick Duran"
+date: 10/14/21
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+```
+
+## Notebook contains code for replicating section in manuscript: Analysis 2: Alignment and CPS outcomes
+
+#### Step 1: Import main data file and run script to prep variables for analysis
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+library(pander)
+```
+
+```{r}
+main.data = read.csv("Step1_PrepareFeatures.csv")
+
+source("Step3_helper.R")
+main.data.20 = variable_prep(main.data)
+
+pander(names(main.data.20))
+# head(main.data.20)
+```
+
+* Relies heavily on "Step3_helper.R." This code does the following:
+
+  * remove levels that are fewer than 20 turns
+  * Convert # of turns to a running proportion score 
+  * Get z-scores for relevant variables
+  * create ordered factor for block (interested in linear trend)
+  * create random factor for within subject variance (making sure each unique subject is signified given their school and team)
+
+#### Step 2: Ordinal regression mixed-effects models
+
+<!-- ## FINAL MODEL (single predictors) (for paper, just report these, but if asked, can report with all included) -->
+<!-- ## I think all these predictors are allowable and justifiable... might want to see https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5543767/ for further justification -->
+<!-- ## also, for adding ordering_prop (that justifies repeated observations, but even without it, still shouldn't be a problem with it given a repeated measure for team) -->
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+library(ordinal)
+library(parameters) 
+```
+
+```{r}
+main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 0, 
+  ifelse(main.data.20$trophy == "silver" | main.data.20$trophy == "trophy", 1, 
+  ifelse(main.data.20$trophy == "gold", 2, NA)))
+
+# main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0)
+# main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA))
+
+```
+
+#### Step 3: LEXICAL
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+clmm_lex <- clmm(as.factor(trophyNum) ~ center(lexical)*center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+# pander(summary(clmm_lex))
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+library(strengejacke)
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+tab_model(clmm_lex) 
+```
+
+Interpretation: output is odds ratios, values above 1 indicate a greater likelihood of receiving a trophy, values below 1 indicate less likelihood of receiving a trophy 
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+# tab_model(clmm_lex,
+#           show.ci = 0.95, #FALSE
+#           order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
+#           pred.labels = c("center(lexical)"="Lexical", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "center(lexical):center(ordering_prop)"="Lexical * Order"),
+#           # rm.terms = c("0|1", "1|2", "Block.l.Q"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("Trophy"),
+#           show.re.var = TRUE,
+#           use.viewer = TRUE)
+```
+
+#### Step 4: SYNTAX
+
+```{r}
+clmm_syn <- clmm(as.factor(trophyNum) ~ center(syn2nd)*center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+tab_model(clmm_syn) 
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+# tab_model(clmm_syn,
+#           show.ci = 0.95, #FALSE
+#           order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
+#           pred.labels = c("center(syn2nd)"="Syntactic", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "center(syn2nd):center(ordering_prop)"="Syntactic * Order"),
+#           # rm.terms = c("0|1", "1|2", "Block.l.Q"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("Trophy"),
+#           show.re.var = TRUE,
+#           use.viewer = TRUE)
+```
+
+#### Step 5: SEMANTIC
+
+```{r}
+## something to note with semantic is there are ~1700 rows/utterances that have NA values because one of the utterances must contain words not in the semantic space
+
+clmm_sem <- clmm(as.factor(trophyNum) ~ center(semantic)*center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+tab_model(clmm_sem) 
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+# tab_model(clmm_sem,
+#           show.ci = 0.95, #FALSE
+#           order.terms = c(1, 2, 3, 4, 11, 5, 6, 7, 9, 8, 10),
+#           pred.labels = c("center(semantic)"="Semantic", "center(ordering_prop)"="Utterance Order", "Block.l.L"="Block (linear trend)", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "center(semantic):center(ordering_prop)"="Semantic * Order"),
+#           # rm.terms = c("0|1", "1|2", "Block.l.Q"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("Trophy"),
+#           show.re.var = TRUE,
+#           use.viewer = TRUE)
+```
+
+#### Step 3: Together (all variables)
+
+<!-- What is the rationale of running all three together? Doing them separately?  -->
+
+<!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
+
+<!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
+
+
+```{r}
+clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syn2nd) + center(semantic))*center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+tab_model(clmm_all)
+```
+
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+# tab_model(clmm_all,
+#           show.ci = 0.95, #FALSE
+#           # rm.terms = c("(Intercept)"),
+#           pred.labels = c("center(semantic)"="Semantic", "center(lexical_log)"="Lexical",  "center(syn2nd_log)"="Syntactic", "center(ordering_prop)"="Discourse Time", "relative_start_timeZ"="Relative Start Time", "level_durationZ"="Level Duration", "utterlen_alignerZ"="Utterance Length Aligner", "ConceptPoT" = "Concept [PoT]", "XQ_know"="Familiarity [yes]", "femdomin"="Majority Female [yes]",
+#                           "center(semantic):center(ordering_prop)"="Semantic * Time",
+#                           "center(lexical_log):center(ordering_prop)"="Lexical * Time",
+#                           "center(syn2nd_log):center(ordering_prop)"="Syntactic * Time"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("Trophy"),
+#           show.re.var = TRUE,
+#           use.viewer = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
