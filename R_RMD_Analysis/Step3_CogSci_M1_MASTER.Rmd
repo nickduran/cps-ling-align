@@ -20,9 +20,9 @@ library(pander)
 ```
 
 ```{r}
-main.data = read.csv("Step1_PrepareFeatures.csv")
+main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
 
-source("Step3_helper.R")
+source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
 
 pander(names(main.data.20))

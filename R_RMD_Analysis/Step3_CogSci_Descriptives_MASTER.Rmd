@@ -20,7 +20,7 @@ library(pander)
 ```
 
 ```{r}
-main.data = read_csv("Step1_PrepareFeatures.csv", show_col_types = FALSE)
+main.data = read_csv("../Data/Step1_PrepareFeatures.csv", show_col_types = FALSE)
 # main.data = read_csv("align_block_splitlevel_bs.csv", show_col_types = FALSE)
 ```
 
