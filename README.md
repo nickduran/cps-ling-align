@@ -51,7 +51,7 @@ The files in the **Data** folder contain the raw (from ALIGN) and processed data
 > **Relevant Files: PREPPED**
 > - **Step1_PrepareFeatures.csv**
 >   - Prepped output from running "Step1_CogSci_Features_MASTER.Rmd"
->   - **Step2_Optional_IndividDiff.csv**
+> - **Step2_Optional_IndividDiff.csv**
 >   - Prepped output from running "Step2_Optional_IndividDiff_MASTER.Rmd"
 
 ## Accompanying Datasheets for Building New Variables (.CSV)
