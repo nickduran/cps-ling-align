@@ -49,9 +49,9 @@ library(parameters)
 ```
 
 ```{r}
-main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 0, 
-  ifelse(main.data.20$trophy == "silver" | main.data.20$trophy == "trophy", 1, 
-  ifelse(main.data.20$trophy == "gold", 2, NA)))
+main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 1, 
+  ifelse(main.data.20$trophy == "silver" | main.data.20$trophy == "trophy", 2, 
+  ifelse(main.data.20$trophy == "gold", 3, NA)))
 
 # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0)
 # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA))
@@ -63,7 +63,7 @@ main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 0,
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 clmm_lex <- clmm(as.factor(trophyNum) ~ center(lexical)*center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
-              (1|team_id), data = main.data.20, link = "logit")
+              (1|team_id), data = main.data.20, link = "logit", threshold="flexible")
 # pander(summary(clmm_lex))
 ```
 
@@ -72,7 +72,7 @@ library(strengejacke)
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-# tab_model(clmm_lex) 
+tab_model(clmm_lex) 
 ```
 
 Interpretation: output is odds ratios, values above 1 indicate a greater likelihood of receiving a trophy, values below 1 indicate less likelihood of receiving a trophy 
@@ -90,6 +90,17 @@ tab_model(clmm_lex,
           show.re.var = TRUE,
           use.viewer = TRUE)
 ```
+
+For interpretation, 
+
+"As lexical increases by one unit, the odds of observing category 0 of TROPHY vs. other 2 categories increase by XX%"
+
+
+
+
+
+
+
 
 #### Step 4: SYNTAX
 
@@ -158,6 +169,7 @@ tab_model(clmm_sem,
 clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = "logit")
+
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
@@ -182,6 +194,18 @@ tab_model(clmm_all)
 ```
 
 
+<!-- For ordinal, can talk about the odds-ratio for some predictor as being X, and this can be interpreted, in terms of the outcome with multiple levels, as a cumulative odds of some percentage of something happening. See: -->
+<!-- https://www.sciencedirect.com/science/article/pii/S0165032719303969 -->
+<!-- https://cran.r-project.org/web/packages/ordinal/vignettes/clmm2_tutorial.pdf -->
+
+<!-- For a good discussion of thresholds/cutoffs and what they mean. See:  -->
+<!-- https://www.statisticssolutions.com/how-to-interpret-an-ordinal-logistic-regression/ -->
+<!-- https://stats.idre.ucla.edu/r/faq/ologit-coefficients/ -->
+<!-- https://www.sciencedirect.com/science/article/pii/S0165032719303969 -->
+
+<!-- Also, a handy reference to the ordinal package in R: https://cran.r-project.org/web/packages/ordinal/ordinal.pdf -->
+
+<!-- Lastly, for thresholds, these don't necessarily need to be reported. I believe they confirm the assumption of these sorts of models (ordinal) of what is called a "proportional odds assumption" or "parallel lines test." This is assuming that the odds are equal across the levels of the outcome. In our example, the proportional odds assumption means that the odds of being no-coin versus silver or gold (j=1) is the same as the odds of being no-coin and silver versus gold (j=2). But not 100% as to whether having a significant p-value here is what this is indicating. But what is for sure is that the thresholds (coefficients) reported are necessary for computing the predictor coefficients (this is what the two linked papers discuss). -->
 
 
 

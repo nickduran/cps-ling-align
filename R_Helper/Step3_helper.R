@@ -10,6 +10,9 @@ variable_prep = function(df) {
     filter(n() >= 20) %>%
     ungroup()
   
+  ## remove extraordinarily long single utterances; why 70? Because this is 5 SDs above mean of utterance length
+  df1 = df1 %>% filter(utterlen_aligner < 71 & utterlen_target < 71)
+  
   # Convert # of turns to a running proportion score 
   df1 = df1 %>% group_by(Team, School, Block, Level, revisited) %>%
     mutate(ordering_prop = utter_order/max(utter_order)) %>%

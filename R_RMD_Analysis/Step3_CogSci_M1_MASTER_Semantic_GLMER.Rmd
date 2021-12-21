@@ -1,0 +1,265 @@
+---
+title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1"
+author: "Nick Duran"
+date: 10/14/21
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# rm(list=ls())
+```
+
+> Notebook contains code for replicating section in manuscript: Analysis 1: Alignment over time
+
+### Step 1: Import main data file and run script to prep variables for analysis
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+library(pander)
+```
+
+```{r}
+main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+
+source("../R_Helper/Step3_helper.R")
+main.data.20 = variable_prep(main.data)
+
+pander(names(main.data.20))
+# head(main.data.20)
+```
+
+* Relies heavily on "Step3_helper.R." This code does the following:
+
+  * remove levels that are fewer than 20 turns
+  * Convert # of turns to a running proportion score 
+  * Get z-scores for relevant variables
+  * create ordered factor for block (interested in linear trend)
+  * create random factor for within subject variance (making sure each unique subject is signified given their school and team)
+
+
+#### Step 6: Build mixed effect models: SEMANTIC
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+library(lme4) ## for lmer
+library(parameters) 
+
+library(strengejacke) ## for tab_model and plot_model
+library(parameters)
+library(lmtest) ## for lrtest
+library(bbmle) ## for AICtab
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+lmer_sem1 = lmer(semantic ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (1|subject_id), main.data.20, control=lmerControl(optimizer="bobyqa")); 
+```
+
+```{r}
+lmer_sem2 = lmer(semantic ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (aligner_role|subject_id), main.data.20, control=lmerControl(optimizer="bobyqa")); 
+```
+
+Compare the two models based on comparing log-likelihood/AIC with various tests.
+
+```{r}
+# Method 1: AICtab
+AICtab(lmer_sem1,lmer_sem2,logLik=TRUE)
+
+#Method 2: lrtest
+lrtest(lmer_sem1,lmer_sem2)
+
+# Method 3: by hand
+logLik(lmer_sem1)
+logLik(lmer_sem2)
+G2 = -2 * logLik(lmer_sem1) + 2 * logLik(lmer_sem2)
+pchisq(as.numeric(G2), df=1, lower.tail=F)
+```
+
+Lets examine the summary structure of the preferred model, now focusing on the appropriateness of the random effects of the model. Again, role|subject variance is very small. Is this variance relevant? Next step is to compare this effect with a model where we pool/ignore the role|subject effect. 
+
+```{r}
+summary(lmer_sem2)
+```
+
+The best that can be said is that the random and pooled have non identical log-likelihoods, and based on AIC, the random effect structure presents a slightly better model. 
+
+```{r}
+lm2 <- lm(semantic ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept, data = main.data.20)
+```
+
+```{r}
+# Method 1: AICtab
+AICtab(lm2,lmer_sem2,logLik=TRUE)
+```
+
+Lastly, for random efffects, let's compute the ICC value
+
+```{r}
+performance::icc(lmer_sem2)
+```
+
+Next, after making some observations about the random effects structure, lets see of the full model is better than the null model. Here we might be on more solid footing in using the LR-test. 
+
+```{r}
+## does not converge when examining within role
+lmer_sem1.null = lmer(semantic ~ 1 + (1|subject_id), main.data.20, control=lmerControl(optimizer="bobyqa")); 
+```
+
+```{r}
+# Method 1: AICtab
+AICtab(lmer_sem1.null,lmer_sem1,logLik=TRUE)
+```
+
+```{r}
+#Method 2: lrtest
+lrtest(lmer_sem1.null,lmer_sem1)
+```
+
+Let's get to interpreting the effects. I don't think these can be exponentiated because not on the log scale. 
+
+```{r, warning=FALSE, message=FALSE}
+model_parameters(lmer_sem2, digits=3)
+# model_parameters(lmer_sem1, exponentiate=T, digits=3)
+# VarCorr(g1.glmer2)
+```
+
+#### Create Visuals for Better Presentation
+
+```{r}
+## Can this be done when not exponentiated. Just the coefficients. Should I do this as a glmer to be consistent with the other models?
+
+# Maybe I don't need a table at all. 
+
+```
+
+```{r}
+pz.s = plot_model(lmer_sem2, show.values = TRUE, value.offset = .4,
+                  group.terms = c(1,1,2,2,2,2,2),
+                  rm.terms = c("Block.l.Q"),  
+                  axis.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]"),
+                  # title=c("syntax Alignment"),
+                  digits = 3) + 
+                  labs(title = "Semantic Alignment",
+                  subtitle = "Linear Mixed Effects")
+
+pz.s = pz.s + ylim(-0.1, 0.1) +
+# pz.s = pz.s +
+  geom_hline(yintercept=0, linetype=3) + 
+  theme_bw() +
+  theme(
+        plot.title=element_text(size=16,face="bold"), # theme_light()
+        axis.text.y=element_text(size=12),
+        axis.ticks.y=element_blank(),
+        axis.text.x=element_text(face="bold"),
+        axis.title=element_text(size=12,face="bold"),
+        strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"))
+pz.s
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Step 7: Table to be used for paper
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+# tab_model(lmer_sem,
+#           show.ci = 0.95, #FALSE
+#           rm.terms = c("Block.l.Q"),
+#           show.intercept = FALSE,
+#           pred.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "BlockExpBlock2"="Block 2 (vs Warmup)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "XQ_know"="Familiarity [yes]", "femdomin"="Majority Female [yes]"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("Semantic"),
+#           show.re.var = FALSE,
+#           show.r2 = FALSE,
+#           show.icc = FALSE,
+#           show.ngroups = FALSE,
+#           show.obs = FALSE, 
+#           use.viewer = TRUE)
+```
+
+```{r}
+# mod1 = plot_model(lmer_sem, type = "eff", terms = c("ordering_prop"))
+# mod1 + labs(title="Semantic Alignment",
+#         x ="Ordering", y = "Cosine")
+# save_plot("semantic_time.png")
+
+```
+
+
+
+
+
+
+
+Ok, new notes from 11/19/21:
+
+A very good paper for just talking about the random effect structure of LMER models, ensures that what is being reported is accurate and gives a critical citation: http://www.singmann.org/download/publications/singmann_kellen-introduction-mixed-models.pdf
+
+An interesting discussion of how to determine whether the random effects variables are worth including, whether a mixed effects model is even necessary. Brings up the interesting idea of using models with and without the effect and comparing with AIC
+https://stats.stackexchange.com/questions/56150/how-can-i-test-whether-a-random-effect-is-significant
+
+In one of the responses to the main thread, a very good point that "although there is 'obviously' variation in subject performance, the extent of this subject variation can be fully or virtually-fully explained by just the residual variance term alone. There is not enough additional subject-level variation to warrant adding an additional subject-level random effect to explain all the observed variation."
+https://stats.stackexchange.com/questions/115090/why-do-i-get-zero-variance-of-a-random-effect-in-my-mixed-model-despite-some-va
+
+Not the greatest post, but makes the point that gamma works on continuous non-negative distributions, whereas poisson and negative binomial do not:
+https://timothy-barry.github.io/posts/2020-06-16-gamma-poisson-nb/
+
+********Topic: Overdispersion
+Not sure whether I need to explicity test for this or not, as visually, it appears to be overdispersed. However, need to plot the residuals to know for sure. So, strike previous comment. Cannot merely plot the DV to make a determination. 
+Just ok resources but useable to back up some claims. 
+https://biometry.github.io/APES/LectureNotes/2016-JAGS/Overdispersion/OverdispersionJAGS.pdf
+https://biometry.github.io/APES//LectureNotes/2016-JAGS/Overdispersion/OverdispersionJAGS.html
+
+*******Topic: "How to model non-negative zero-inflated continuous data?"
+Given this is exactly what I'm trying to do, this thread was helpful and pointed to the need of running zero-inflated/hurdle models (i.e., two-part models) 
+https://stats.stackexchange.com/questions/187824/how-to-model-non-negative-zero-inflated-continuous-data
+
+But this post also suggests running a model where you run the two parts yourself rather than relying on a single function, like glmmTMB, especially if I want to build a model without the random effects structure. This tutorial shows you how:
+https://seananderson.ca/2014/05/18/gamma-hurdle/
+
+This seananderson paper is really useful as it does make the points that most packages are built for count data (and he lists a bunch of these options), but this doesn't help me much. He also reinforces the point that what is needed are binomial-Gamma hurdle models. 
+
+Use this paper when citing glmmTMB models:
+https://journal.r-project.org/archive/2017/RJ-2017-066/RJ-2017-066.pdf
+
+
+
+
+
+
+
+
+
