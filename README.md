@@ -1,6 +1,6 @@
 # Multi-Level Linguistic Alignment in a Dynamic Collaborative Problem-Solving Task
 
-N Duran, A. Paige, S D'Mello. Cognitive Science.
+N Duran, A. Paige, S D'Mello., Others. Cognitive Science.
 
 ## What does this respository and README include?
 
