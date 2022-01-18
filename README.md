@@ -82,3 +82,7 @@ The files in the **Accompanying_Data** folder contain additional datasheets nece
 ## Data codebook and variable descriptions
 
 > - **NOT ADDED YET**
+
+## SPECIAL NOTE ON GENERATING BASELINE DATA RESULTS
+
+All **.Rmd** files in the **R_RMD_Analysis** folder can be rerun by simply commenting out the line that imports the datasheet with the real data and uncommenting the line that imports the equivalent datasheet generated using the baseline data.

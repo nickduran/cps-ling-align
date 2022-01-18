@@ -24,6 +24,9 @@ rm(list=ls())
 ```{r}
 main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
 
+###### BASELINE DATA FOR COMPARISON ########
+# main.data = read.csv("../Data/align_block_splitlevel_bs.csv")
+
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
 
@@ -57,6 +60,57 @@ main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 1,
 <!-- # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0) -->
 <!-- # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA)) -->
 
+##### Combine all variables
+
+<!-- What is the rationale of running all three together? Doing them separately?  -->
+
+<!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
+
+<!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
+
+```{r}
+# clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
+#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+#               (1|team_id), data = main.data.20, link = "logit")
+
+clmm_all <- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(lexical) + center(syntax) + center(semantic)):center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r}
+model_parameters(clmm_all, digits=3)
+performance::icc(clmm_all)
+```
+
+```{r, echo=FALSE}
+tab_model(clmm_all,
+
+          rm.terms = c("1|2", "2|3", "Block.l.Q"),
+          order.terms = c(1,2,3,9,10,11,8,4,5,6,7),
+          
+          pred.labels = c("semantic"="Semantic", "syntax"="Syntax", "lexical"="Lexical",
+                          "center(semantic):center(ordering_prop)"="Semantic * Time",
+                          "center(lexical):center(ordering_prop)"="Lexical * Time",
+                          "center(syntax):center(ordering_prop)"="Syntactic * Time",                         
+                          "Block.l.L"="Block (linear trend)",
+                          "level_durationZ"="Level Duration",
+                          "relative_start_timeZ"="Level Start Time",
+                          "ConceptPoT" = "Concept [PoT]", 
+                          "revisitedreattempt" = "Revisit [yes]"), 
+
+          
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = FALSE,
+          show.r2 = FALSE,
+          show.icc = FALSE,
+          show.ngroups = FALSE,
+          show.obs = FALSE,
+          use.viewer = TRUE)
+```
+
 ##### Lexical
 
 <!-- https://cran.r-project.org/web/packages/ordinal/vignettes/clmm2_tutorial.pdf -->
@@ -81,7 +135,7 @@ tab_model(clmm_lex,
           # order.terms = c(3,10,8,4,5,6,7),
           order.terms = c(1,7,6,2,3,4,5),
           pred.labels = c("lexical"="Lexical", "center(lexical):center(ordering_prop)"="Lexical * Order", "Block.l.L"="Block (linear trend)", "level_durationZ"="Level duration", "relative_start_timeZ"="Level start time", "revisitedreattempt" = "Revisit [yes]",  "ConceptPoT" = "Concept [PoT]"),          
-          
+          title = "Lexical Alignment",
           digits = 3,
           digits.re = 3,
           dv.labels = c("Trophy"),
@@ -117,6 +171,7 @@ tab_model(clmm_syn,
           # order.terms = c(3,10,8,4,5,6,7),
           order.terms = c(1,7,6,2,3,4,5),
           pred.labels = c("syntax"="Syntax", "center(syntax):center(ordering_prop)"="Syntax * Order", "Block.l.L"="Block (linear trend)", "level_durationZ"="Level duration", "relative_start_timeZ"="Level start time", "revisitedreattempt" = "Revisit [yes]",  "ConceptPoT" = "Concept [PoT]"),
+          title = "Syntactic Alignment",
           
           digits = 3,
           digits.re = 3,
@@ -150,7 +205,8 @@ tab_model(clmm_sem,
           # order.terms = c(3,10,8,4,5,6,7),
           order.terms = c(1,7,6,2,3,4,5),
           pred.labels = c("semantic"="Semantic", "center(semantic):center(ordering_prop)"="Semantic * Order", "Block.l.L"="Block (linear trend)", "level_durationZ"="Level duration", "relative_start_timeZ"="Level start time", "revisitedreattempt" = "Revisit [yes]",  "ConceptPoT" = "Concept [PoT]"),
-
+          title = "Semantic Alignment",
+          
           digits = 3,
           digits.re = 3,
           dv.labels = c("Trophy"),
@@ -160,45 +216,6 @@ tab_model(clmm_sem,
           show.ngroups = FALSE,
           show.obs = FALSE,
           use.viewer = TRUE)
-```
-
-##### Combine all variables
-
-<!-- What is the rationale of running all three together? Doing them separately?  -->
-
-<!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
-
-<!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
-
-```{r}
-# clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
-#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
-#               (1|team_id), data = main.data.20, link = "logit")
-
-clmm_all <- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(lexical) + center(syntax) + center(semantic)):center(ordering_prop) + 
-              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
-              (1|team_id), data = main.data.20, link = "logit")
-```
-
-```{r}
-model_parameters(clmm_all, digits=3)
-# performance::icc(clmm_all)
-```
-
-```{r, echo=FALSE}
-# tab_model(clmm_all,
-#           show.ci = 0.95, #FALSE
-#           # rm.terms = c("(Intercept)"),
-#           pred.labels = c("center(semantic)"="Semantic", "center(lexical_log)"="Lexical",  "center(syn2nd_log)"="Syntactic", "center(ordering_prop)"="Discourse Time", "relative_start_timeZ"="Relative Start Time", "level_durationZ"="Level Duration", "utterlen_alignerZ"="Utterance Length Aligner", "ConceptPoT" = "Concept [PoT]", "XQ_know"="Familiarity [yes]", "femdomin"="Majority Female [yes]",
-#                           "center(semantic):center(ordering_prop)"="Semantic * Time",
-#                           "center(lexical_log):center(ordering_prop)"="Lexical * Time",
-#                           "center(syn2nd_log):center(ordering_prop)"="Syntactic * Time"),
-#           # title = "",
-#           digits = 3,
-#           digits.re = 3,
-#           dv.labels = c("Trophy"),
-#           show.re.var = TRUE,
-#           use.viewer = TRUE)
 ```
 
 ```{r}

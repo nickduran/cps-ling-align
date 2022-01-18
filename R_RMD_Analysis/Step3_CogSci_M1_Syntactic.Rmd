@@ -24,6 +24,9 @@ rm(list=ls())
 ```{r}
 main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
 
+###### BASELINE DATA FOR COMPARISON ########
+# main.data = read.csv("../Data/align_block_splitlevel_bs.csv")
+
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
 
