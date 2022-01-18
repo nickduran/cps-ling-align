@@ -1,0 +1,201 @@
+---
+title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1: Semantic"
+author: "Nick Duran"
+date: 01/15/22
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figs/',
+                      warning=FALSE, message=FALSE, error=FALSE)
+```
+
+> Notebook contains code for replicating section in manuscript: Analysis 1: Alignment over time
+
+### Step 1: Import main data file and run script to prep variables for analysis
+
+```{r}
+library(tidyverse)
+library(pander)
+
+rm(list=ls())
+```
+
+```{r}
+main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+
+source("../R_Helper/Step3_helper.R")
+main.data.20 = variable_prep(main.data)
+
+pander(names(main.data.20))
+```
+
+* Relies heavily on "Step3_helper.R." This code does the following:
+
+  * remove levels that are fewer than 20 turns
+  * Convert # of turns to a running proportion score 
+  * Get z-scores for relevant variables
+  * create ordered factor for block (interested in linear trend)
+  * create random factor for within subject variance (making sure each unique subject is signified given their school and team)
+
+
+### Step 2: Build and test models: Semantic
+
+```{r, results='hide'}
+library(lme4) ## for lmer
+library(parameters) 
+
+library(strengejacke) ## for tab_model and plot_model
+library(parameters)
+library(lmtest) ## for lrtest
+library(bbmle) ## for AICtab
+```
+
+##### Model selection tests: interceptVSslope
+
+```{r}
+lmer_sem1 = lmer(semantic ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (1|subject_id), main.data.20, control=lmerControl(optimizer="bobyqa")); 
+```
+
+```{r}
+lmer_sem2 = lmer(semantic ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (aligner_role|subject_id), main.data.20, control=lmerControl(optimizer="bobyqa")); 
+```
+
+Compare the two models based on comparing log-likelihood/AIC with various tests.
+
+```{r}
+# AICtab
+AICtab(lmer_sem1,lmer_sem2,logLik=TRUE)
+```
+
+```{r}
+# lrtest
+lrtest(lmer_sem1,lmer_sem2)
+```
+
+##### Model selection tests: randomVSnone
+
+Lets examine the summary structure of the preferred model, now focusing on the appropriateness of the random effects of the model. Again, role|subject variance is very small. Is this variance relevant? Next step is to compare this effect with a model where we pool/ignore the role|subject effect. 
+
+```{r}
+summary(lmer_sem2)
+```
+
+The best that can be said is that the random and pooled have non identical log-likelihoods, and based on AIC, the random effect structure presents a slightly better model. 
+
+```{r}
+lm2 <- lm(semantic ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept, data = main.data.20)
+```
+
+```{r}
+# Method 1: AICtab
+AICtab(lm2,lmer_sem2,logLik=TRUE)
+```
+
+Lastly, for random efffects, let's compute the ICC value
+
+```{r, echo=FALSE, results='hide'}
+performance::icc(lmer_sem2)
+```
+
+##### Model selection tests: fullVsnull
+
+Next, after making some observations about the random effects structure, lets see of the full model is better than the null model. Here we might be on more solid footing in using the LR-test. 
+
+```{r}
+## does not converge when examining within role
+lmer_sem1.null = lmer(semantic ~ 1 + (aligner_role|subject_id), main.data.20, control=lmerControl(optimizer="bobyqa")); 
+summary(lmer_sem1.null)
+```
+
+```{r}
+# AICtab
+AICtab(lmer_sem1.null,lmer_sem1,logLik=TRUE)
+```
+
+```{r}
+# lrtest
+lrtest(lmer_sem1.null,lmer_sem1)
+```
+
+##### Interpreting
+
+Let's get to interpreting the effects. 
+
+```{r}
+model_parameters(lmer_sem2, digits=3)
+```
+
+### Step 3: Create coefficient table
+
+```{r, echo=FALSE}
+tab_model(lmer_sem2,
+          show.ci = 0.95, #FALSE
+          rm.terms = c("Block.l.Q"),
+          show.intercept = FALSE,
+          pred.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "BlockExpBlock2"="Block 2 (vs Warmup)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "XQ_know"="Familiarity [yes]", "femdomin"="Majority Female [yes]"),
+          # title = "",
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Semantic"),
+          show.re.var = FALSE,
+          show.r2 = FALSE,
+          show.icc = FALSE,
+          show.ngroups = FALSE,
+          show.obs = FALSE,
+          use.viewer = TRUE)
+```
+
+```{r, echo=FALSE}
+mod1 = plot_model(lmer_sem2, type = "eff", terms = c("ordering_prop"))
+mod1 + labs(title="Semantic Alignment",
+        x ="Ordering", y = "Cosine")
+save_plot("Figs/semantic_time.png")
+```
+
+```{r}
+save.image(file = "semantic.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r, echo=FALSE}
+# pz.s = plot_model(lmer_sem2, show.values = TRUE, value.offset = .4,
+#                   group.terms = c(1,1,2,2,2,2,2),
+#                   rm.terms = c("Block.l.Q"),  
+#                   axis.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]"),
+#                   # title=c("syntax Alignment"),
+#                   digits = 3) + 
+#                   labs(title = "Semantic Alignment",
+#                   subtitle = "Linear Mixed Effects")
+# 
+# pz.s = pz.s + ylim(-0.1, 0.1) +
+# # pz.s = pz.s +
+#   geom_hline(yintercept=0, linetype=3) + 
+#   theme_bw() +
+#   theme(
+#         plot.title=element_text(size=16,face="bold"), # theme_light()
+#         axis.text.y=element_text(size=12),
+#         axis.ticks.y=element_blank(),
+#         axis.text.x=element_text(face="bold"),
+#         axis.title=element_text(size=12,face="bold"),
+#         strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"))
+# pz.s
+```
+
+
+
+
+
+
+
+
+

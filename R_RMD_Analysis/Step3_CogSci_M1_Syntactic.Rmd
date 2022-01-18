@@ -1,0 +1,443 @@
+---
+title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1: Syntax"
+author: "Nick Duran"
+date: 01/15/22
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figs/',
+                      warning=FALSE, message=FALSE, error=FALSE)
+```
+
+> Notebook contains code for replicating section in manuscript: Analysis 1: Alignment over time
+
+### Step 1: Import main data file and run script to prep variables for analysis
+
+```{r}
+library(tidyverse)
+library(pander)
+
+rm(list=ls())
+```
+
+```{r}
+main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+
+source("../R_Helper/Step3_helper.R")
+main.data.20 = variable_prep(main.data)
+
+pander(names(main.data.20))
+```
+
+* Relies heavily on "Step3_helper.R." This code does the following:
+
+  * remove levels that are fewer than 20 turns
+  * Convert # of turns to a running proportion score 
+  * Get z-scores for relevant variables
+  * create ordered factor for block (interested in linear trend)
+  * create random factor for within subject variance (making sure each unique subject is signified given their school and team)
+
+### Step 2: Build and test models: Syntax
+
+<!-- Our solution for addressing the excess of zeros in the data is to separately model these from the non-zeros in a binomial-Gamma hurdle model. -->
+
+```{r, results='hide'}
+# library(glmmTMB) ## no longer using
+library(lme4) ## for tab_model and plot_model
+library(strengejacke) ## for tab_model
+library(parameters)
+library(lmtest) ## for lrtest
+library(bbmle) ## for AICtab
+```
+
+Setup for separating prevalence from magnitude
+
+```{r}
+GHM.data.20 = main.data.20 %>% mutate(non_zero_syn = ifelse(syntax > 0, 1, 0))
+```
+
+####################################################################################################
+####################################################################################################
+
+#### Binomial logistic model 
+
+##### Model selection tests: interceptVSslope
+
+To start, lets examine the binomial logistic model by first comparing two plausible random effect structures (while avoiding convergence issues).
+
+Run the models: 
+
+```{r}
+z1.glmer1 <- glmer(non_zero_syn ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (1|subject_id), binomial(link = "logit"), data = GHM.data.20)
+```
+
+```{r}
+z1.glmer2 <- glmer(non_zero_syn ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (aligner_role|subject_id), binomial(link = "logit"), data = GHM.data.20)
+```
+
+Compare the two models based on comparing log-likelihood/AIC with various tests. 
+    
+```{r}
+# AICtab
+AICtab(z1.glmer1,z1.glmer2,logLik=TRUE)
+```
+
+```{r}
+# lrtest
+lrtest(z1.glmer1,z1.glmer2)
+```
+
+##### Model selection tests: randomVSnone
+
+Lets examine the summary structure of the preferred model, now focusing on the appropriateness of the random effects of the model. It does seem that the role|subject variance is very small. Is this variance relevant? Next step is to compare this effect with a model where we pool/ignore the role|subject effect. 
+
+```{r}
+summary(z1.glmer2)
+```
+
+The best that can be said is that the random and pooled have non identical log-likelihoods, and based on AIC, the random effect structure presents a slightly better model. 
+
+```{r}
+z1.glm2 <- glm(non_zero_syn ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept, binomial(link = "logit"), data = GHM.data.20)
+```
+
+```{r}
+# AICtab
+AICtab(z1.glm2,z1.glmer2,logLik=TRUE)
+```
+
+Lastly, for random effects, let's compute the ICC value
+
+```{r, echo=FALSE, results='hide'}
+performance::icc(z1.glmer2)
+```
+
+##### Model selection tests: fullVsnull
+
+Next, after making some observations about the random effects structure, lets see of the full model is better than the null model.
+
+```{r}
+z1.glmer2.null <- glmer(non_zero_syn ~ 1 + (aligner_role|subject_id), binomial(link = "logit"), data = GHM.data.20)
+```
+
+```{r}
+# Method 1: AICtab
+AICtab(z1.glmer2.null,z1.glmer2,logLik=TRUE)
+```
+
+```{r}
+#Method 2: lrtest
+lrtest(z1.glmer2.null,z1.glmer2)
+```
+
+##### Interpreting
+
+Let's get to interpreting the effects. These results can be reported as "log effect estimates" and exponentiated for "odds ratios." 
+
+```{r}
+# model_parameters(z1.glmer2, exponentiate = T, digits=3)
+```
+
+```{r}
+model_parameters(z1.glmer2, exponentiate = F, digits=3)
+```
+
+```{r}
+(1-(exp(-0.056))) * 100
+```
+
+
+
+
+
+####################################################################################################
+####################################################################################################
+
+#### Gamma models
+
+##### Model selection tests: interceptVSslope
+
+```{r}
+g1.glmer1 <- glmer(syntax ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (1|subject_id), family = Gamma(link = log), data = subset(GHM.data.20, non_zero_syn == 1), control=glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+g1.glmer2 <- glmer(syntax ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (aligner_role|subject_id), family = Gamma(link = log), data = subset(GHM.data.20, non_zero_syn == 1), control=glmerControl(optimizer="bobyqa"))
+```
+
+Compare the two models based on comparing log-likelihood/AIC with various tests. Using a couple of methods for my own learning and experimentation.
+
+```{r}
+# AICtab
+AICtab(g1.glmer1,g1.glmer2,logLik=TRUE)
+```
+
+```{r}
+# lrtest
+lrtest(g1.glmer1,g1.glmer2)
+```
+
+##### Model selection tests: randomVSnone
+
+Lets examine the summary structure of the preferred model, now focusing on the appropriateness of the random effects of the model. Again, role|subject variance is very small. Is this variance relevant? Next step is to compare this effect with a model where we pool/ignore the role|subject effect. 
+
+```{r}
+summary(g1.glmer2)
+```
+
+The best that can be said is that the random and pooled have non identical log-likelihoods, and based on AIC, the random effect structure presents a slightly better model. 
+
+```{r}
+g1.glm2 <- glm(syntax ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept, family = Gamma(link = log), data = subset(GHM.data.20, non_zero_syn == 1))
+```
+
+```{r}
+# AICtab
+AICtab(g1.glm2,g1.glmer2,logLik=TRUE)
+```
+
+Lastly, for random efffects, let's compute the ICC value
+
+```{r, echo=FALSE, results='hide'}
+performance::icc(g1.glmer2)
+```
+
+##### Model selection tests: fullVsnull
+
+Next, after making some observations about the random effects structure, lets see of the full model is better than the null model. Here we might be on more solid footing in using the LR-test. 
+
+```{r}
+g1.glmer2.null <- glmer(syntax ~ 1 + (aligner_role|subject_id), family = Gamma(link = log), data = subset(GHM.data.20, non_zero_syn == 1), control=glmerControl(optimizer="bobyqa"))
+```
+
+```{r}
+# Method 1: AICtab
+AICtab(g1.glmer2.null,g1.glmer2,logLik=TRUE)
+```
+
+```{r}
+#Method 2: lrtest
+lrtest(g1.glmer2.null,g1.glmer2)
+```
+
+##### Interpreting
+
+Let's get to interpreting the effects. These results can be reported as "log effect estimates" and exponentiated for "odds ratios." 
+
+```{r}
+# model_parameters(g1.glmer2, exponentiate = T, digits=3)
+```
+
+```{r}
+model_parameters(g1.glmer2, exponentiate = F, digits=3)
+
+(1-(exp(-0.081))) * 100
+```
+
+
+####################################################################################################
+####################################################################################################
+
+### Step 3: Create visuals
+
+Let's start with rate incidence/odds ratio as a forest plot using "plot_model" with modifications
+
+```{r, echo=FALSE, fig.show='hide'}
+pz.s = plot_model(z1.glmer2, show.values = TRUE, value.offset = .4,
+                  group.terms = c(1,1,2,2,2,2,2),
+                  rm.terms = c("Block.l.Q"),  
+                  axis.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]"),
+                  # title=c("syntax Alignment"),
+                  dot.size=2,
+                  digits = 3) + 
+                  labs(title = "Syntax Alignment",
+                  subtitle = "Binomial Logistic Mixed Effects")
+
+pz.s = pz.s + ylim(.5, 3.1) + 
+  geom_hline(yintercept =1, linetype=3) + 
+  theme_bw() +
+  theme(
+        plot.title=element_text(size=16,face="bold"), # theme_light()
+        axis.text.y=element_text(size=10),
+        # axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.x=element_text(face="bold"),
+        axis.title=element_text(size=12,face="bold"),
+        strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"))
+pz.s
+```
+
+```{r,  echo=FALSE, fig.show='hide'}
+pg.s = plot_model(g1.glmer2, show.values = TRUE, value.offset = .4,
+                  group.terms = c(1,1,2,2,2,2,2),
+                  rm.terms = c("Block.l.Q"),  
+                  axis.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]"),
+                  title=c(""),
+                  dot.size=2,
+                  digits = 3) + 
+                  labs(title = "",
+                  subtitle = "Gamma Mixed Effects")
+                  # caption = expression(paste("Significance: ***", italic("p"), "<.001, **", italic("p"), "<.001, *", italic("p"), "<.05")))
+
+pg.s = pg.s + ylim(.85, 1.15) + 
+  scale_y_continuous(name="Rate Ratios") +
+  geom_hline(yintercept =1, linetype=3) + 
+  theme_bw() + 
+  theme(plot.title=element_text(size=16,face="bold"), # theme_light()
+        # axis.text.y=element_text(size=12),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.x=element_text(face="bold"),
+        axis.title=element_text(size=12,face="bold"),
+        # plot.caption = element_text(hjust = 0),
+        strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"))
+pg.s
+```
+
+```{r}
+library(patchwork)
+alignPlotSyn = pz.s + pg.s
+alignPlotSyn
+# alignPlotSyn + plot_annotation(tag_levels = 'A')
+```
+
+```{r}
+ggsave(filename = "Figs/syntactic_forest.png", width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+```
+
+```{r}
+save.image(file = "syntactic.RData")
+```
+
+
+
+
+
+<!-- Customize my own forest plots, but this is really cumbersome and long to do what the above does much more elegantly. -->
+
+```{r, echo=FALSE}
+# #Need to prep the input tables. 
+
+# gdf = data.frame(model_parameters(g1.glmer2, exponentiate = T)) %>% select(-t) %>% mutate(Model="Gamma Mixed Effects")
+# zdf = data.frame(model_parameters(z1.glmer2, exponentiate = T)) %>% select(-z) %>% mutate(Model="Binomial Logistic Mixed Effects")
+# df.lex = rbind(zdf, gdf)
+# 
+# df.lex2 = df.lex %>% mutate_if(is.numeric, round, digits = 3) %>%
+#   mutate(Group = case_when(Parameter == "ordering_prop" | Parameter == "Block.l.L" ~ 
+#                 "Main Predictors", 
+#                 TRUE ~ "Covariates"),
+#          p.vales = ifelse(p < .001, "***",
+#                    ifelse(p < .01 & p >= .001, "**",
+#                    ifelse(p < .05 & p >= .01, "*", "")))) %>%
+#   ## just get parameters and columns that are needed
+#   filter(Effects == "fixed" &  Parameter != "Block.l.Q" & Parameter != "(Intercept)") %>%
+#   select(Parameter, Coefficient, CI_low, CI_high, Group, Model, p.vales) %>%
+# ## reorder parameters
+#   group_by(Model) %>%
+#   mutate(Parameter=factor(Parameter)) %>% 
+#   group_by(Model) %>%
+#   mutate(Parameter=fct_relevel(Parameter,c("ConceptPoT", "aligner_rolecontroller", "utterlen_alignerZ", "relative_start_timeZ", "level_durationZ", "Block.l.L", "ordering_prop"))) %>%
+#   arrange(Parameter) %>%
+#   ungroup()
+# 
+# df.lex2$Parameter = recode_factor(df.lex2$Parameter, "ConceptPoT" = "Concept [PoT]", "aligner_rolecontroller"="Role [controller]", "utterlen_alignerZ"="Utterance length", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "Block.l.L"="Block (linear trend)", "ordering_prop"="Utterance order")
+```
+
+<!-- Create function for generating forest plots -->
+
+```{r, echo=FALSE}
+# # https://datascienceplus.com/lattice-like-forest-plot-using-ggplot2-in-r/
+# # https://billobrien.wordpress.com/2018/04/05/__trashed/
+# # https://stackoverflow.com/questions/62246541/forest-plot-with-table-ggplot-coding
+# 
+# forest_indiv <- function(form_df, wrapit=FALSE) {
+#    
+#     plot1 = ggplot(data=form_df,
+#     aes(x = Parameter,y = Coefficient, ymin = CI_low, ymax = CI_high))+
+#     # geom_point(size=3, shape=19)+ # use only if not going to use color
+#     geom_pointrange(aes(col=Group), show.legend = FALSE)+ ## this is good, but creates a legend
+#     geom_hline(aes(fill=Parameter), yintercept =1, linetype=3)+
+#     xlab('Parameter') + ylab("95% Confidence Interval")+
+#     geom_errorbar(aes(ymin=CI_low, ymax=CI_high,col=Group), show.legend = FALSE, width=0,cex=.5)+ 
+#     geom_text(aes(x = Parameter, label =  paste0(Coefficient, p.vales)), nudge_x = .35) + #size=3
+#     coord_flip() + 
+# 
+#     theme(plot.title=element_text(size=16,face="bold"),
+#         axis.text.y=element_text(size=12),
+#         axis.ticks.y=element_blank(),
+#         axis.text.x=element_text(face="bold"),
+#         axis.title=element_text(size=12,face="bold"),
+#         strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"))+
+#       
+#     if (wrapit == TRUE) {
+#       facet_grid(~Model,scales = "free",switch="y")
+#     }
+#     return(plot1)
+# }
+```
+ 
+```{r, echo=FALSE}
+# p1.1 = forest_indiv(filter(df.lex2, Model=="Binomial Logistic Mixed Effects")) + ggtitle("syntax\nBinomial Logistic Mixed Effects") + ylim(.5, 2.5)
+# p1.1
+```
+
+```{r, echo=FALSE}
+# p1.2 = forest_indiv(filter(df.lex2, Model=="Gamma Mixed Effects")) + ggtitle("syntax\nGamma Mixed Effects") + 
+#   theme(axis.text.y=element_blank(),
+#         axis.title.y=element_blank()) + 
+#   ylim(.85, 1.15)
+# p1.2
+```
+ 
+```{r, echo=FALSE}
+# # p3 = forest_indiv(df.lex2, wrapit=TRUE); p3
+# p1.1 + p1.2
+```
+
+
+
+
+
+<!-- #### coefficient table w/ tab_model -->
+
+```{r, echo=FALSE}
+# tab_model(zigamma_lex, zigamma_syn2nd,
+#           show.ci = 0.95, #FALSE
+#           rm.terms = c("Block.l.Q"),
+#           pred.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "BlockExpBlock2"="Block 2 (vs Warmup)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]", "Revisited_birevisit" = "Revisit [yes]", "XQ_know"="Familiarity [yes]", "femdomin"="Majority Female [yes]"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("syntax", "Syntactic"),
+#           show.re.var = TRUE,
+#           use.viewer = TRUE)
+
+```
+
+
+
+<!-- #### glmmTMB approach -->
+
+<!-- To start, going to build with a glmmTMB model that allows random effect structure. We are going to use the gamma distribution because we are dealing with non-integer (non-count) data as our DV and thus is continuously distributed, with some skew in the positive direction. Starting with the simplest random effect structure model with subject.  -->
+
+```{r, echo=FALSE}
+# zigamma_lex2 <- glmmTMB(syntax ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (aligner_role|subject_id),
+#                          family = ziGamma(link = "log"), 
+#                          ziformula = ~ ordering_prop + Block.l + aligner_role + relative_start_timeZ + level_durationZ + utterlen_alignerZ + Concept + (aligner_role|subject_id),
+#                          data = main.data.20)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

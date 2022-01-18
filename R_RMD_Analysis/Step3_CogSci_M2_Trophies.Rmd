@@ -1,0 +1,240 @@
+---
+title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2: Trophies"
+author: "Nick Duran"
+date: 01/15/22
+output: html_document
+---
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figs/',
+                      warning=FALSE, message=FALSE, error=FALSE)
+```
+
+## Notebook contains code for replicating section in manuscript: Analysis 2: Alignment and CPS outcomes
+
+#### Step 1: Import main data file and run script to prep variables for analysis
+
+```{r}
+library(tidyverse)
+library(pander)
+
+rm(list=ls())
+```
+
+```{r}
+main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+
+source("../R_Helper/Step3_helper.R")
+main.data.20 = variable_prep(main.data)
+
+pander(names(main.data.20))
+# head(main.data.20)
+```
+
+* Relies heavily on "Step3_helper.R." This code does the following:
+
+  * remove levels that are fewer than 20 turns
+  * Convert # of turns to a running proportion score 
+  * Get z-scores for relevant variables
+  * create ordered factor for block (interested in linear trend)
+  * create random factor for within subject variance (making sure each unique subject is signified given their school and team)
+
+### Step 2: Build and test models: Ordinal regression mixed-effects models
+
+```{r, results='hide'}
+library(ordinal)
+library(parameters) 
+library(strengejacke)
+```
+
+Setup for identifying outcomes to be predicted
+
+```{r}
+main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 1, 
+  ifelse(main.data.20$trophy == "silver" | main.data.20$trophy == "trophy", 2, 
+  ifelse(main.data.20$trophy == "gold", 3, NA)))
+```
+<!-- # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0) -->
+<!-- # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA)) -->
+
+##### Lexical
+
+```{r}
+clmm_lex <- clmm(as.factor(trophyNum) ~ lexical + center(lexical):center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit", threshold="flexible")
+```
+
+```{r}
+model_parameters(clmm_lex, digits=3)
+```
+
+Interpretation: output is odds ratios, values above 1 indicate a greater likelihood of receiving a trophy, values below 1 indicate less likelihood of receiving a trophy 
+
+```{r, echo=FALSE}
+tab_model(clmm_lex,
+          
+          rm.terms = c("1|2", "2|3", "Block.l.Q"),
+          # order.terms = c(3,10,8,4,5,6,7),
+          order.terms = c(1,7,6,2,3,4,5),
+          pred.labels = c("lexical"="Lexical", "center(lexical):center(ordering_prop)"="Lexical * Order", "Block.l.L"="Block (linear trend)", "level_durationZ"="Level duration", "relative_start_timeZ"="Level start time", "revisitedreattempt" = "Revisit [yes]",  "ConceptPoT" = "Concept [PoT]"),          
+          
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = FALSE,
+          show.r2 = FALSE,
+          show.icc = FALSE,
+          show.ngroups = FALSE,
+          show.obs = FALSE,
+          use.viewer = TRUE)
+```
+
+For interpretation:
+
+"As lexical increases by one unit, the odds of observing category 0 of TROPHY vs. other 2 categories increase by XX%"
+
+##### Syntactic
+
+```{r}
+clmm_syn <- clmm(as.factor(trophyNum) ~ syntax + center(syntax):center(ordering_prop) +  
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r}
+model_parameters(clmm_syn, digits=3)
+```
+
+```{r, echo=FALSE}
+tab_model(clmm_syn,
+          
+          rm.terms = c("1|2", "2|3", "Block.l.Q"),
+          # order.terms = c(3,10,8,4,5,6,7),
+          order.terms = c(1,7,6,2,3,4,5),
+          pred.labels = c("syntax"="Syntax", "center(syntax):center(ordering_prop)"="Syntax * Order", "Block.l.L"="Block (linear trend)", "level_durationZ"="Level duration", "relative_start_timeZ"="Level start time", "revisitedreattempt" = "Revisit [yes]",  "ConceptPoT" = "Concept [PoT]"),
+          
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = FALSE,
+          show.r2 = FALSE,
+          show.icc = FALSE,
+          show.ngroups = FALSE,
+          show.obs = FALSE,
+          use.viewer = TRUE)
+```
+
+##### Semantic
+
+<!-- ## something to note with semantic is there are ~1700 rows/utterances that have NA values because one of the utterances must contain words not in the semantic space - does this get addressed anywhere in manuscript? -->
+```{r}
+clmm_sem <- clmm(as.factor(trophyNum) ~ semantic + center(semantic):center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r}
+model_parameters(clmm_sem, digits=3)
+```
+
+```{r, echo=FALSE}
+tab_model(clmm_sem,
+
+          rm.terms = c("1|2", "2|3", "Block.l.Q"),
+          # order.terms = c(3,10,8,4,5,6,7),
+          order.terms = c(1,7,6,2,3,4,5),
+          pred.labels = c("semantic"="Semantic", "center(semantic):center(ordering_prop)"="Semantic * Order", "Block.l.L"="Block (linear trend)", "level_durationZ"="Level duration", "relative_start_timeZ"="Level start time", "revisitedreattempt" = "Revisit [yes]",  "ConceptPoT" = "Concept [PoT]"),
+
+          digits = 3,
+          digits.re = 3,
+          dv.labels = c("Trophy"),
+          show.re.var = FALSE,
+          show.r2 = FALSE,
+          show.icc = FALSE,
+          show.ngroups = FALSE,
+          show.obs = FALSE,
+          use.viewer = TRUE)
+```
+
+##### Combine all variables
+
+<!-- What is the rationale of running all three together? Doing them separately?  -->
+
+<!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
+
+<!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
+
+```{r}
+# clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
+#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+#               (1|team_id), data = main.data.20, link = "logit")
+
+clmm_all <- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(lexical) + center(syntax) + center(semantic)):center(ordering_prop) + 
+              level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+              (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r}
+tab_model(clmm_all)
+```
+
+```{r, echo=FALSE}
+# tab_model(clmm_all,
+#           show.ci = 0.95, #FALSE
+#           # rm.terms = c("(Intercept)"),
+#           pred.labels = c("center(semantic)"="Semantic", "center(lexical_log)"="Lexical",  "center(syn2nd_log)"="Syntactic", "center(ordering_prop)"="Discourse Time", "relative_start_timeZ"="Relative Start Time", "level_durationZ"="Level Duration", "utterlen_alignerZ"="Utterance Length Aligner", "ConceptPoT" = "Concept [PoT]", "XQ_know"="Familiarity [yes]", "femdomin"="Majority Female [yes]",
+#                           "center(semantic):center(ordering_prop)"="Semantic * Time",
+#                           "center(lexical_log):center(ordering_prop)"="Lexical * Time",
+#                           "center(syn2nd_log):center(ordering_prop)"="Syntactic * Time"),
+#           # title = "",
+#           digits = 3,
+#           digits.re = 3,
+#           dv.labels = c("Trophy"),
+#           show.re.var = TRUE,
+#           use.viewer = TRUE)
+```
+
+```{r}
+save.image(file = "trophies.RData")
+```
+
+
+
+
+
+```{r, echo=FALSE}
+# NOTES: 01/15/22
+
+## FINAL MODEL (single predictors) (for paper, just report these, but if asked, can report with all included)
+## I think all these predictors are allowable and justifiable... might want to see https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5543767/ for further justification
+## also, for adding ordering_prop (that justifies repeated observations, but even without it, still shouldn't be a problem with it given a repeated measure for team)
+
+###############################################################################
+
+# For ordinal, can talk about the odds-ratio for some predictor as being X, and this can be interpreted, in terms of the outcome with multiple levels, as a cumulative odds of some percentage of something happening. See:
+# https://www.sciencedirect.com/science/article/pii/S0165032719303969
+# https://cran.r-project.org/web/packages/ordinal/vignettes/clmm2_tutorial.pdf
+# 
+# For a good discussion of thresholds/cutoffs and what they mean. See:
+# https://www.statisticssolutions.com/how-to-interpret-an-ordinal-logistic-regression/
+# https://stats.idre.ucla.edu/r/faq/ologit-coefficients/
+# https://www.sciencedirect.com/science/article/pii/S0165032719303969
+# 
+# Also, a handy reference to the ordinal package in R: https://cran.r-project.org/web/packages/ordinal/ordinal.pdf
+# 
+# Lastly, for thresholds, these don't necessarily need to be reported. I believe they confirm the assumption of these sorts of models (ordinal) of what is called a "proportional odds assumption" or "parallel lines test." This is assuming that the odds are equal across the levels of the outcome. In our example, the proportional odds assumption means that the odds of being no-coin versus silver or gold (j=1) is the same as the odds of being no-coin and silver versus gold (j=2). But not 100% as to whether having a significant p-value here is what this is indicating. But what is for sure is that the thresholds (coefficients) reported are necessary for computing the predictor coefficients (this is what the two linked papers discuss).
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,230 @@
+---
+title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Descriptives"
+author: "Nick Duran"
+date: 10/14/21
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+```
+
+## Notebook contains code for computing level stats on relationship between # of turns, trophy completions, block, and verbosity
+
+#### Step 1: Import main data file and run script to prep variables for analysis
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+library(pander)
+```
+
+```{r}
+main.data = read_csv("../Data/Step1_PrepareFeatures.csv", show_col_types = FALSE)
+# main.data = read_csv("align_block_splitlevel_bs.csv", show_col_types = FALSE)
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+turns = main.data %>% group_by(Team, School, Block, Level, revisited) %>%
+  summarise(numberturns = n())
+main.data = left_join(main.data, turns)
+```
+
+#### Step 1
+
+> Get some stats on relationship between # of turns, trophy completions, and block
+
+```{r}
+rmTurns = 20
+
+## how many original levels
+levels1 = main.data %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels1)
+
+## how many levels after 20 turns
+levels2 = filter(main.data, numberturns >= rmTurns) %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels2)
+```
+
+```{r}
+## how many trophies distributed across all levels; how many blocks?
+levtab1 = table(levels1$trophy); blotab1 = table(levels1$Block);
+
+## how many trophies distributed across reduced levels; how many blocks?
+levtab2 = table(levels2$trophy);  blotab2 = table(levels2$Block); 
+
+levtab1; levtab2
+blotab1; blotab2
+```
+
+```{r}
+## What levels are dropped, based on TROPHY, when reducing by number of turns?
+
+## how many levels were dropped BY TROPHIES after removing turns with 20 or fewer turns
+# levtab1[1]-levtab2[1]; ((levtab1[1]-levtab2[1])/levtab1[1])*100
+# levtab1[3]-levtab2[3]; ((levtab1[3]-levtab2[3])/levtab1[3])*100
+# levtab1[2]-levtab2[2]; ((levtab1[2]-levtab2[2])/levtab1[2])*100
+matA = matrix(c(names(levtab1[1]), levtab1[1], levtab2[1], ((levtab1[1]-levtab2[1])/levtab1[1])*100,
+                names(levtab1[3]), levtab1[3], levtab2[3], ((levtab1[3]-levtab2[3])/levtab1[3])*100,
+                names(levtab1[2]), levtab1[2], levtab2[2], ((levtab1[2]-levtab2[2])/levtab1[2])*100),
+                ncol=4,byrow=TRUE)
+colnames(matA) <- c("Trophy", "Original","Retained","% Drop")
+matA
+```
+
+
+```{r}
+## What levels are dropped, based on BLOCK, when reducing by number of turns?
+
+# blotab1[1]-blotab2[1]; ((blotab1[1]-blotab2[1])/blotab1[1])*100
+# blotab1[3]-blotab2[3]; ((blotab1[3]-blotab2[3])/blotab1[3])*100
+# blotab1[2]-blotab2[2]; ((blotab1[2]-blotab2[2])/blotab1[2])*100
+matB = matrix(c("Warmup", blotab1[3], blotab2[3], ((blotab1[3]-blotab2[3])/blotab1[3])*100,
+                "ExpBlock1", blotab1[1], blotab2[1], ((blotab1[1]-blotab2[1])/blotab1[1])*100,
+                "ExpBlock2", blotab1[2], blotab2[2], ((blotab1[2]-blotab2[2])/blotab1[2])*100),
+                ncol=4,byrow=TRUE)
+colnames(matB) <- c("Block", "Original","Retained","% Drop")
+matB
+```
+
+#### STEP 2
+
+Repeat much of the above (stats on relationship between # of turns, trophy completions, and block) but in a format more easily used in paper and for interpretation
+
+##### how many original levels; broken down by Block and Trophy
+
+```{r}
+main.data$trophy = factor(main.data$trophy, levels=c("none", "silver", "gold"))
+main.data$Block = factor(main.data$Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))
+
+levels1.agg = main.data %>% group_by(Team, School, Block, Level, revisited, trophy) %>%
+  summarise_if(is.numeric, list(~ mean(., na.rm = TRUE))); x1 = xtabs(~trophy + Block, levels1.agg)
+x1
+```
+
+##### how many reduced levels after 20 or fewer turns; broken down by Block and Trophy
+
+```{r}
+levels2.agg = filter(main.data, numberturns >= rmTurns) %>% group_by(Team, School, Block, Level, revisited, trophy) %>%
+  summarise_if(is.numeric, list(~ mean(., na.rm = TRUE))); x2 = xtabs(~trophy + Block, levels2.agg)
+x2
+```
+
+##### report above as a percentage (dropped vs. retained)
+
+```{r}
+droplevel = ((x1-x2)/x1)*100; droplevel
+droplevel2 = ((x2)/x1)*100; droplevel2
+```
+
+##### how many levels removed
+
+```{r}
+levels2.agg = filter(main.data, numberturns < rmTurns) %>% group_by(Team, School, Block, Level, revisited, trophy) %>%
+  summarise_if(is.numeric, list(~ mean(., na.rm = TRUE))); x3 = xtabs(~trophy + Block, levels2.agg)
+x3
+```
+
+What is the story emerging from above? How does this change any of the analyses attempting to do? As implications when trying to relate language dynamics, that require temporal component of at least 20 turns to develop, to performance outcomes.
+
+```{r}
+# First, way more levels are attempted from block to block
+colSums(x1)
+# But this gets equalized out some after removing levels with 20 or less turns
+colSums(x2)
+# This shows the reduction. Although more levels are dropped from ExpBlock2, not that dramatic
+matB
+```
+
+```{r}
+# There is also a good distribution of levels with different performance outcomes
+rowSums(x1)
+# But this gets reduced quite a bit with 20 or less turns
+rowSums(x2)
+# This shows the reduction. Many more gold levels are dropped, followed by none levels
+matA
+```
+
+First the raw distribution of levels as trophy by block, overall. Clearly gold trophies really ramp up from Warmup to ExpBlock2, silver trophies stay constant, and none levels increase as well. Much has to do with the fact that more levels are attempted from block to block
+
+```{r}
+x1
+```
+
+This is a better look as a percentage of overall levels based on those attempted in each block. Interestingly, of those attempted, silver actually decreases while gold goes up. None stays constant.
+
+```{r}
+t(t(x1)/colSums(x1))
+```
+
+> Now, the raw distribution of levels as trophy by block in the reduced set.
+
+```{r}
+x2
+```
+
+> And what it looks like in terms of levels as trophy by block for those actually attempted in the reduced set. Sort of same pattern as the original, but just not as pronounced.
+
+```{r}
+t(t(x2)/colSums(x2))
+```
+
+> Why not as pronounced, because there are a lot of levels dropped in the gold and not so much in silver. The most affected is gold trophies in the later blocks.
+
+> Lots of levels with gold trophies are removed (implication: people are relying on non-verbal cues for these); relatively way fewer silver trophies were removed (in fact, more failed levels than those getting silver: implication: silver levels have lots of language relative to gold levels)
+
+```{r}
+droplevel = ((x1-x2)/x1)*100; droplevel
+```
+
+<!-- thinking it is not wise to combine gold and silver in terms of relating language to performance, they have their own unique language properties. Clearly, penalizing most the levels where gold trophies were achieved as they had the fewest conversational turns. Very little impact on levels where silver trophies were awarded. -->
+
+> One more look, just confirms that golds really have fewer words. Followed by silver with second most, and none with the most. Also shows trends where the number of words drops off across blocks
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+levBlotab = main.data %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(numberturns)); colnames(levBlotab) <- c("Trophy", "Block", "AvgUtterace"); levBlotab
+
+lev_duration = main.data %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(level_duration)); colnames(lev_duration) <- c("Trophy", "Block", "AvgUtterace"); lev_duration
+```
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+df.20.more = filter(main.data, numberturns >= rmTurns)
+
+levBlotab2 = df.20.more %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(numberturns)); colnames(levBlotab2) <- c("Trophy", "Block", "AvgUtterace"); levBlotab2
+
+lev_duration2 = df.20.more %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(level_duration)); colnames(lev_duration2) <- c("Trophy", "Block", "AvgUtterace"); lev_duration2
+```
+
+> After removing for low utterances, what is the average number of utterances of those retained
+
+```{r}
+test1 = df.20.more %>% group_by(Team, School, Block, Level, revisited, trophy) %>%
+  # mutate(maxTurns = max(utter_order)+1) %>%
+  summarise_if(is.numeric, list(mean))
+mean(test1$numberturns)
+sd(test1$numberturns)
+max(test1$numberturns)
+```
+
+<!-- > problem with anything involving trophies is that these are the more difficult levels merely because it took more turns to get to a solution -->
+
+<!-- > with levels under 20 turns, much greater likelihood to get a gold 48.68% vs. 18.19% and less likely to go unsolved (32.55% vs. 46.52%) -->
+
+
+
+```{r}
+# levels1 = df.sl2 %>% select(Team, School, aligner_score) %>% distinct()
+# levels2 = df.sl2 %>% select(Team, School, block_manip, Level, revisited, numberturns) %>% distinct()
+# 
+# quantile(levels2$numberturns)
+# IQR(levels2$numberturns)
+# 
+# duration = levels2$numberturns
+# breaks = seq(5, 200, by=5)
+# duration.cut = cut(duration, breaks, right=FALSE)
+# duration.freq = table(duration.cut)
+# duration.cumfreq = cumsum(duration.freq)
+# 
+# duration.cumrelfreq = duration.cumfreq / nrow(levels2) *100
+# duration.cumrelfreq
+
+```
+
