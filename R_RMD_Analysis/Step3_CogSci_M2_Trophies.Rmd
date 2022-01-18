@@ -59,6 +59,8 @@ main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 1,
 
 ##### Lexical
 
+<!-- https://cran.r-project.org/web/packages/ordinal/vignettes/clmm2_tutorial.pdf -->
+
 ```{r}
 clmm_lex <- clmm(as.factor(trophyNum) ~ lexical + center(lexical):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
@@ -67,6 +69,7 @@ clmm_lex <- clmm(as.factor(trophyNum) ~ lexical + center(lexical):center(orderin
 
 ```{r}
 model_parameters(clmm_lex, digits=3)
+performance::icc(clmm_lex)
 ```
 
 Interpretation: output is odds ratios, values above 1 indicate a greater likelihood of receiving a trophy, values below 1 indicate less likelihood of receiving a trophy 
@@ -104,6 +107,7 @@ clmm_syn <- clmm(as.factor(trophyNum) ~ syntax + center(syntax):center(ordering_
 
 ```{r}
 model_parameters(clmm_syn, digits=3)
+# performance::icc(clmm_syn)
 ```
 
 ```{r, echo=FALSE}
@@ -136,6 +140,7 @@ clmm_sem <- clmm(as.factor(trophyNum) ~ semantic + center(semantic):center(order
 
 ```{r}
 model_parameters(clmm_sem, digits=3)
+# performance::icc(clmm_sem)
 ```
 
 ```{r, echo=FALSE}
@@ -176,7 +181,8 @@ clmm_all <- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(le
 ```
 
 ```{r}
-tab_model(clmm_all)
+model_parameters(clmm_all, digits=3)
+# performance::icc(clmm_all)
 ```
 
 ```{r, echo=FALSE}
