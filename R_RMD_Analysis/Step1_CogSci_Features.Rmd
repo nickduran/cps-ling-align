@@ -19,7 +19,11 @@ rm(list=ls())
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 library(tidyverse)
 library(pander)
+
+setwd("/Users/nickduran/Desktop/GitProjects/CPS-ling-align/R_RMD_Analysis/") # CHANGE THIS
 ```
+
+Run the actual data (be sure to update the name of the file to be saved at the end)
 
 ```{r}
 PennPOS_keep = read.csv("../Data/ALIGN_Output/PennPOS_keep_T2T.txt", sep="\t")
@@ -27,6 +31,17 @@ StanPOS_keep = read.csv("../Data/ALIGN_Output/StanPOS_keep_T2T.txt", sep="\t")
 PennPOS_remove = read.csv("../Data/ALIGN_Output/PennPOS_remove_T2T.txt", sep="\t")
 StanPOS_remove = read.csv("../Data/ALIGN_Output/StanPOS_remove_T2T.txt", sep="\t")
 ```
+
+Run the baseline data (be sure to update the name of the file to be saved at the end)
+
+```{r}
+# PennPOS_keep = read.csv("../Data/ALIGN_Output/PennPOS_keep_T2T_Baseline.txt", sep="\t")
+# StanPOS_keep = read.csv("../Data/ALIGN_Output/StanPOS_keep_T2T_Baseline.txt", sep="\t")
+# PennPOS_remove = read.csv("../Data/ALIGN_Output/PennPOS_remove_T2T_Baseline.txt", sep="\t")
+# StanPOS_remove = read.csv("../Data/ALIGN_Output/StanPOS_remove_T2T_Baseline.txt", sep="\t")
+```
+
+Code below runs the same for either actual and baseline
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 PennPOS_keep = PennPOS_keep %>% select(condition_info, partner_direction, time, utterance_length1, utterance_length2, 
@@ -91,9 +106,12 @@ pander(names(df_composite))
 ```
 
 ```{r}
-write.csv(df_composite, "../Data/Step1_PrepareFeatures.csv", row.names=FALSE)
+# write.csv(df_composite, "../Data/Step1_PrepareFeatures.csv", row.names=FALSE)
 ```
 
+```{r}
+write.csv(df_composite, "../Data/Step1_PrepareFeatures_Baseline.csv", row.names=FALSE)
+```
 
 
 

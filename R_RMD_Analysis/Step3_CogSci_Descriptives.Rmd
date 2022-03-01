@@ -180,35 +180,70 @@ droplevel = ((x1-x2)/x1)*100; droplevel
 > One more look, just confirms that golds really have fewer words. Followed by silver with second most, and none with the most. Also shows trends where the number of words drops off across blocks
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-levBlotab = main.data %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(numberturns)); colnames(levBlotab) <- c("Trophy", "Block", "AvgUtterace"); levBlotab
+levBlotab = main.data %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(numberturns)); colnames(levBlotab) <- c("Trophy", "Block", "AvgNumTurns"); levBlotab
 
-lev_duration = main.data %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(level_duration)); colnames(lev_duration) <- c("Trophy", "Block", "AvgUtterace"); lev_duration
+lev_duration = main.data %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(level_duration)); colnames(lev_duration) <- c("Trophy", "Block", "AvgDuration"); lev_duration
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 df.20.more = filter(main.data, numberturns >= rmTurns)
 
-levBlotab2 = df.20.more %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(numberturns)); colnames(levBlotab2) <- c("Trophy", "Block", "AvgUtterace"); levBlotab2
+levBlotab2 = df.20.more %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(level_duration), mean(numberturns)); colnames(levBlotab2) <- c("Trophy", "Block", "AvgDuration", "AvgNumTurns"); levBlotab2
 
-lev_duration2 = df.20.more %>% group_by(factor(trophy, levels=c("none", "silver", "gold")), factor(Block, levels=c("Warmup", "ExpBlock1", "ExpBlock2"))) %>% summarise(mean(level_duration)); colnames(lev_duration2) <- c("Trophy", "Block", "AvgUtterace"); lev_duration2
 ```
 
-> After removing for low utterances, what is the average number of utterances of those retained
+############# GENERATE WHAT ACTUALLY APPEARS IN PAPER ###############
+
+Original
+<!-- Overall, teams attempted more levels as rounds progressed (R1:185, R2:213, R3:232). Participants also spent less time in each level across rounds (R1: M=465.64 seconds, R2: M=428.01, R3: M=366.15) while using a similar number of turns (R1: M=59.34, R2: M=55.44, R3: M=49.12).  -->
+
+<!-- The proportion of gold coins was low across all rounds (R1: 14.05\%, R2: 15.49\%, R3: 20.69\%) whereas the proportion of silver coins was higher (R1: 45.41\%, R2: 34.74\%, R3: 36.21\%) and equal to the proportion of levels that went unsolved (R1: 40.54\%, R2: 49.77\%, R3: 43.10\%).  -->
+
+<!-- Another notable pattern was that teams generally took less time and required fewer turns in levels where they earned a gold (247.92 seconds; 38.25 turns) as compared to levels where they earned a silver (387.15 seconds; 54.37 turns) and for levels that went unsolved (486.08 seconds; 60.25 turns).  -->
+
+Current
+
+<!-- This allowed 630 (57.54\%) of the levels to be retained for evaluation (number of turns: M=54.25, SD=34.92; words per turn: M=11.48, SD=3.03).  -->
 
 ```{r}
-test1 = df.20.more %>% group_by(Team, School, Block, Level, revisited, trophy) %>%
-  # mutate(maxTurns = max(utter_order)+1) %>%
-  summarise_if(is.numeric, list(mean))
-mean(test1$numberturns)
-sd(test1$numberturns)
-max(test1$numberturns)
+levels1 = main.data %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels1)
+
+rmTurns = 20
+## how many levels after 20 turns, also same data as models, removing extraordinarily long single utterances
+levels2 = filter(main.data, numberturns >= rmTurns) %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels2)
+
 ```
+
+<!-- This allowed 630 (57.54\%) of the levels to be retained for evaluation (number of turns: M=54.25, SD=34.92; words per turn: M=11.48, SD=3.03).  -->
+
+```{r}
+# overallturnswords = df.20.more %>% group_by(Team, School, Block, Level, revisited, trophy) %>% 
+#   summarize_at(c("numberturns", "utterlen_aligner"), list(mean, sd)); overallturnswords 
+
+overallturnswords = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
+  summarize_at(c("numberturns", "utterlen_aligner"), list(mean, sd)); colnames(overallturnswords) <- c("Mturn", "Mutterlen", "SDturn", "SDutterlen"); overallturnswords
+```
+
+<!-- Of the 630 reduced levels, 107 resulted in a gold coin, 242 in a silver coin, and 281 went unsolved. As shown in Table X, teams generally took less time and required fewer turns in levels where they earned a gold, as compared to levels where they earned a silver and for levels that went unsolved.  -->
+
+```{r}
+levBlotab2 = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
+  group_by(factor(trophy, levels=c("none", "silver", "gold"))) %>% 
+  summarize_at(c("level_duration", "numberturns"), list(mean, sd)); colnames(levBlotab2) <- c("Trophy", "Mduration", "Mturns", "SDduration", "SDturns"); levBlotab2 
+
+## TODO: look at the statistical significance of change over time... 
+
+```
+
+<!-- In considering performance over rounds where participants have an opportunity to improve their game-play and become more comfortable with one another, the teams, on average, attempted more levels as rounds progressed, and spent less time in each level (see Table X). And while they used a similar number of turns for the initial two rounds, there was a statistically drop-off in number of turns by the final round. The number of gold trophies earned in each round, adjusted for the number of levels attempted for that round, was overall low and stayed consistent across rounds. The proportion of silver trophies was overall higher, but also stayed consistent across rounds.  -->
+
+<!-- A complete breakdown of time taken per level and number of turns for outcome and round is provided in the supplementary section [need to generate].   -->
+
+############# OTHER ###############
 
 <!-- > problem with anything involving trophies is that these are the more difficult levels merely because it took more turns to get to a solution -->
 
 <!-- > with levels under 20 turns, much greater likelihood to get a gold 48.68% vs. 18.19% and less likely to go unsolved (32.55% vs. 46.52%) -->
-
-
 
 ```{r}
 # levels1 = df.sl2 %>% select(Team, School, aligner_score) %>% distinct()

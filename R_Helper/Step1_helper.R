@@ -8,7 +8,6 @@ cleanup = function(df) {
   ######   ######   ######   ######   ###### 
 
   
-  
   df1 = df %>% 
     mutate(School = word(condition_info, 1, sep="-"), 
            Team = word(condition_info, 2, sep="-"), 

@@ -25,7 +25,11 @@ rm(list=ls())
 ```
 
 ```{r}
-main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+###### REAL DATA : BE SURE TO UPDATE NAMES OF THE SAVED OUTPUT FILES ########
+# main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+
+###### BASELINE DATA FOR COMPARISON : BE SURE TO UPDATE NAMES OF THE SAVED OUTPUT FILES ########
+main.data = read.csv("../Data/Step1_PrepareFeatures_Baseline.csv")
 
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
@@ -54,7 +58,8 @@ ggplot(g1, aes(x=value))+
   labs(title="Distribution of Alignment Scores",x="Align Value (Cosine)", y = "Frequency") +
   theme_bw()
 
-ggsave("Figs/histogram.pdf")
+# ggsave("Figs/histogram.pdf")
+ggsave("Figs/histogram_baseline.pdf")
 ```
 
 ```{r}
@@ -270,7 +275,7 @@ Let's get to interpreting the effects. These results can be reported as "log eff
 ```{r}
 model_parameters(g1.glmer2, exponentiate = F, digits=3)
 
-(1-(exp(-0.035))) * 100
+# (1-(exp(-0.035))) * 100
 ```
 <!-- # GHM.data.20 %>% -->
 <!-- #   group_by(aligner_role) %>% -->
@@ -344,11 +349,14 @@ alignPlotLex
 ```
 
 ```{r}
-ggsave(filename = "Figs/lexical_forest.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+# ggsave(filename = "Figs/lexical_forest.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+ggsave(filename = "Figs/lexical_forest_baseline.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+
 ```
 
 ```{r}
-save.image(file = "lexical.RData")
+# save.image(file = "lexical.RData")
+save.image(file = "lexical_baseline.RData")
 ```
 
 
