@@ -32,7 +32,7 @@ The files in the **R_RMD_Analysis** folder contains the sequence of steps in R t
 
 ## R data analysis output (.HTML)
 
-The files in the **R_HTML_Analysis_Output** folder contains easy-to-read formatted HTML files. To view in web browser, please right-click on each file below to open in a new tab or window. (NOT ADDED YET)
+The files in the **R_HTML_Analysis_Output** folder contains easy-to-read formatted HTML files. To view in web browser, please right-click on each file below to open in a new tab or window.
 
 > **Relevant Files:**
 >
