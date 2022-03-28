@@ -15,19 +15,19 @@ The files in the **R_RMD_Analysis** folder contains the sequence of steps in R t
 
 > **Relevant Files:**
 >
-> - **Step1_CogSci_Features.Rmd**
+> - **Step1_Features.Rmd**
 >   - Notebook takes raw output files from the ALIGN analysis and performs a clean-up to creates necessary variables for analysis, with a focus on creating the composite linguistic variables
 > - **Step2_Optional_IndividDiff.Rmd**
 >   - Notebook adds optional individual difference measures to main datasheet
-> - **Step3_CogSci_M1_Lexical.Rmd**
+> - **Step3_M1_Lexical.Rmd**
 >   - Notebook contains code for replicating section in manuscript: Analysis 1: Alignment over time: Lexical
-> - **Step3_CogSci_M1_Syntax.Rmd**
+> - **Step3_M1_Syntax.Rmd**
 >   - Notebook contains code for replicating section in manuscript: Analysis 1: Alignment over time: Syntax
-> - **Step3_CogSci_M1_Semantic.Rmd**
+> - **Step3_M1_Semantic.Rmd**
 >   - Notebook contains code for replicating section in manuscript: Analysis 1: Alignment over time: Semantic
-> - **Step3_CogSci_M2_Trophies.Rmd**
+> - **Step3_M2_Trophies.Rmd**
 >   - Notebook contains code for replicating section in manuscript: Analysis 2: Alignment and CPS outcomes
-> - **Step3_CogSci_Descriptives.Rmd**
+> - **Step3_Descriptives.Rmd**
 >   - Notebook contains code for computing level stats on relationship between # of turns, trophy completions, block, and verbosity
 
 ## R data analysis output (.HTML)
@@ -36,9 +36,11 @@ The files in the **R_HTML_Analysis_Output** folder contains easy-to-read formatt
 
 > **Relevant Files:**
 >
-> - http://dynamicog.org/...
-> - http://dynamicog.org/...
-> - http://dynamicog.org/...
+> - http://dynamicog.org/CPS-align/Step1_Features.html
+> - http://dynamicog.org/CPS-align/Step3_M1_Lexical.html
+> - http://dynamicog.org/CPS-align/Step3_M1_Syntax.html
+> - http://dynamicog.org/CPS-align/Step3_M1_Semantic.html
+> - http://dynamicog.org/CPS-align/Step3_M2_Trophies.html
 
 ## Stat R Helper Files (.R)
 
@@ -78,10 +80,6 @@ The files in the **Accompanying_Data** folder contain additional datasheets nece
 > - **Step2_FilesToIntegrate**
 >   - person_block.csv
 >   - person.csv
-
-## Data codebook and variable descriptions
-
-> - **NOT ADDED YET**
 
 ## SPECIAL NOTE ON GENERATING BASELINE DATA RESULTS
 
