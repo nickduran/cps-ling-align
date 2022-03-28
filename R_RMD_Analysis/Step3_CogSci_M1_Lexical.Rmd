@@ -1,7 +1,7 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1: Lexical"
 author: "Nick Duran"
-date: 01/15/22
+date: 03/28/22
 output: html_document
 ---
 
@@ -26,10 +26,10 @@ rm(list=ls())
 
 ```{r}
 ###### REAL DATA : BE SURE TO UPDATE NAMES OF THE SAVED OUTPUT FILES ########
-# main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
+main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
 
 ###### BASELINE DATA FOR COMPARISON : BE SURE TO UPDATE NAMES OF THE SAVED OUTPUT FILES ########
-main.data = read.csv("../Data/Step1_PrepareFeatures_Baseline.csv")
+# main.data = read.csv("../Data/Step1_PrepareFeatures_Baseline.csv")
 
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
@@ -55,11 +55,37 @@ names(align.labels) = c("lexical", "syntax", "semantic")
 ggplot(g1, aes(x=value))+
   geom_histogram(binwidth=0.05)+
   facet_wrap(~align, labeller = labeller(align = align.labels), scales = "free")+
-  labs(title="Distribution of Alignment Scores",x="Align Value (Cosine)", y = "Frequency") +
-  theme_bw()
-
+  # labs(title="Distribution of Alignment Scores",x="Align Value (Cosine)", y = "Frequency") +
+  labs(y = "Frequency") +
+  theme_bw() + 
+  theme(plot.title=element_text(size=14,face="bold"), # theme_light()
+  #       axis.text.y=element_text(size=12),
+        axis.ticks.y=element_blank(),
+  #       axis.text.x=element_text(size=12, face="bold"),
+  #       axis.title=element_text(size=12,face="bold"),
+  #       # plot.caption = element_text(hjust = 0),
+  #       # strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"),
+    axis.line = element_line(color = "#3D4852"),
+    axis.ticks = element_line(color = "#3D4852"),
+    panel.grid.major.y = element_line(color = "#DAE1E7"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank()
+  )
 # ggsave("Figs/histogram.pdf")
-ggsave("Figs/histogram_baseline.pdf")
+# ggsave("Figs/histogram_baseline.pdf")
+```
+
+```{r, echo=FALSE}
+# ggsave(filename = "Figs/histogram.png",width = 6, height = 3, dpi = 300, units = "in", device='png')
+```
+
+```{r, echo=FALSE}
+# What is just the overall amount of alignment for each linguistic type?
+# summtab = main.data.20 %>% 
+#   select(Block, lexical, syntax, semantic) %>%
+#   group_by(Block) %>%
+#   summarise(across(everything(), .f = list(mean = mean, sd = sd), na.rm = TRUE))
+# pander(summtab, digits=3)
 ```
 
 ```{r}
@@ -277,10 +303,6 @@ model_parameters(g1.glmer2, exponentiate = F, digits=3)
 
 # (1-(exp(-0.035))) * 100
 ```
-<!-- # GHM.data.20 %>% -->
-<!-- #   group_by(aligner_role) %>% -->
-<!-- #   summarise(mean(lexical)) -->
-
 
 ####################################################################################################
 ####################################################################################################
@@ -348,15 +370,15 @@ alignPlotLex
 # alignPlotLex + plot_annotation(tag_levels = 'A')
 ```
 
-```{r}
+```{r, echo=FALSE}
 # ggsave(filename = "Figs/lexical_forest.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
-ggsave(filename = "Figs/lexical_forest_baseline.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+# ggsave(filename = "Figs/lexical_forest_baseline.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
 
 ```
 
-```{r}
-# save.image(file = "lexical.RData")
-save.image(file = "lexical_baseline.RData")
+```{r, echo=FALSE}
+save.image(file = "lexical.RData")
+# save.image(file = "lexical_baseline.RData")
 ```
 
 

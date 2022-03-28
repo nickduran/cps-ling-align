@@ -1,7 +1,7 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1: Syntax"
 author: "Nick Duran"
-date: 01/15/22
+date: 03/28/22
 output: html_document
 ---
 
@@ -25,7 +25,7 @@ rm(list=ls())
 main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
 
 ###### BASELINE DATA FOR COMPARISON ########
-# main.data = read.csv("../Data/align_block_splitlevel_bs.csv")
+# main.data = read.csv("../Data/Step1_PrepareFeatures_Baseline.csv")
 
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
@@ -235,7 +235,7 @@ Let's get to interpreting the effects. These results can be reported as "log eff
 ```{r}
 model_parameters(g1.glmer2, exponentiate = F, digits=3)
 
-(1-(exp(-0.081))) * 100
+# (1-(exp(-0.081))) * 100
 ```
 
 
@@ -305,12 +305,13 @@ alignPlotSyn
 # alignPlotSyn + plot_annotation(tag_levels = 'A')
 ```
 
-```{r}
-ggsave(filename = "Figs/syntactic_forest.png", width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+```{rm, echo=FALSE}
+# ggsave(filename = "Figs/syntactic_forest.png", width = 8, height = 4.5, dpi = 300, units = "in", device='png')
 ```
 
-```{r}
+```{r, echo=FALSE}
 save.image(file = "syntactic.RData")
+# save.image(file = "syntactic_baseline.RData")
 ```
 
 

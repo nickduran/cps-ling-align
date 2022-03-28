@@ -180,24 +180,33 @@ pre code {
 <div id="step-1-import-main-data-files-and-select-relevant-variables-and-combine-into-master-datasheet" class="section level4">
 <h4>Step 1: Import main data files and select relevant variables and combine into master datasheet</h4>
 <pre class="r"><code>library(tidyverse)
-library(pander)</code></pre>
+library(pander)
+
+setwd(&quot;/Users/nickduran/Desktop/GitProjects/CPS-ling-align/R_RMD_Analysis/&quot;) # CHANGE THIS</code></pre>
+<p>Run the actual data (be sure to update the name of the file to be saved at the end)</p>
 <pre class="r"><code>PennPOS_keep = read.csv(&quot;../Data/ALIGN_Output/PennPOS_keep_T2T.txt&quot;, sep=&quot;\t&quot;)
 StanPOS_keep = read.csv(&quot;../Data/ALIGN_Output/StanPOS_keep_T2T.txt&quot;, sep=&quot;\t&quot;)
 PennPOS_remove = read.csv(&quot;../Data/ALIGN_Output/PennPOS_remove_T2T.txt&quot;, sep=&quot;\t&quot;)
 StanPOS_remove = read.csv(&quot;../Data/ALIGN_Output/StanPOS_remove_T2T.txt&quot;, sep=&quot;\t&quot;)</code></pre>
+<p>Run the baseline data (be sure to update the name of the file to be saved at the end)</p>
+<pre class="r"><code># PennPOS_keep = read.csv(&quot;../Data/ALIGN_Output/PennPOS_keep_T2T_Baseline.txt&quot;, sep=&quot;\t&quot;)
+# StanPOS_keep = read.csv(&quot;../Data/ALIGN_Output/StanPOS_keep_T2T_Baseline.txt&quot;, sep=&quot;\t&quot;)
+# PennPOS_remove = read.csv(&quot;../Data/ALIGN_Output/PennPOS_remove_T2T_Baseline.txt&quot;, sep=&quot;\t&quot;)
+# StanPOS_remove = read.csv(&quot;../Data/ALIGN_Output/StanPOS_remove_T2T_Baseline.txt&quot;, sep=&quot;\t&quot;)</code></pre>
+<p>Code below runs the same for either actual and baseline</p>
 <pre class="r"><code>PennPOS_keep = PennPOS_keep %&gt;% select(condition_info, partner_direction, time, utterance_length1, utterance_length2, 
-                               lexical_lem1, lexical_lem2, lexical_lem3, lexical_tok1, lexical_tok2, lexical_tok3, 
-                               syntax_penn_lem2, syntax_penn_tok2, syntax_penn_lem3, syntax_penn_tok3, 
-                               cosine_semanticL)
+                lexical_lem1, lexical_lem2, lexical_lem3, lexical_tok1, lexical_tok2, lexical_tok3, 
+                syntax_penn_lem2, syntax_penn_tok2, syntax_penn_lem3, syntax_penn_tok3, 
+                cosine_semanticL)
 
 StanPOS_keep = StanPOS_keep %&gt;% select(condition_info, partner_direction, time, syntax_stan_lem2, syntax_stan_tok2, syntax_stan_lem3, syntax_stan_tok3)
 
 mergekeep = left_join(PennPOS_keep,StanPOS_keep)</code></pre>
 <pre class="r"><code>PennPOS_remove = PennPOS_remove %&gt;% select(condition_info, partner_direction, time, 
-                                     syntax_penn_lem2, syntax_penn_lem3, syntax_penn_tok2, syntax_penn_tok3) %&gt;% rename(syntax_penn_lem2_nodp = syntax_penn_lem2, syntax_penn_lem3_nodp = syntax_penn_lem3, syntax_penn_tok2_nodp = syntax_penn_tok2, syntax_penn_tok3_nodp = syntax_penn_tok3)
+                  syntax_penn_lem2, syntax_penn_lem3, syntax_penn_tok2, syntax_penn_tok3) %&gt;% rename(syntax_penn_lem2_nodp = syntax_penn_lem2, syntax_penn_lem3_nodp = syntax_penn_lem3, syntax_penn_tok2_nodp = syntax_penn_tok2, syntax_penn_tok3_nodp = syntax_penn_tok3)
 
 StanPOS_remove = StanPOS_remove %&gt;% select(condition_info, partner_direction, time,
-                                     syntax_stan_lem2, syntax_stan_lem3, syntax_stan_tok2, syntax_stan_tok3) %&gt;% rename(syntax_stan_lem2_nodp = syntax_stan_lem2, syntax_stan_lem3_nodp = syntax_stan_lem3, syntax_stan_tok2_nodp = syntax_stan_tok2, syntax_stan_tok3_nodp = syntax_stan_tok3)
+                  syntax_stan_lem2, syntax_stan_lem3, syntax_stan_tok2, syntax_stan_tok3) %&gt;% rename(syntax_stan_lem2_nodp = syntax_stan_lem2, syntax_stan_lem3_nodp = syntax_stan_lem3, syntax_stan_tok2_nodp = syntax_stan_tok2, syntax_stan_tok3_nodp = syntax_stan_tok3)
 
 mergeremove = left_join(PennPOS_remove,StanPOS_remove)</code></pre>
 <pre class="r"><code>df.merge = left_join(mergekeep,mergeremove)</code></pre>
@@ -366,6 +375,7 @@ pander(head(df_composite[,c(1:6,17:21)]))</code></pre>
 <pre class="r"><code>pander(names(df_composite))</code></pre>
 <p><em>Team</em>, <em>School</em>, <em>Block</em>, <em>Concept</em>, <em>Goal</em>, <em>Level</em>, <em>trophy</em>, <em>level_duration</em>, <em>relative_start_time</em>, <em>revisited</em>, <em>speaker_target</em>, <em>aligner_score</em>, <em>aligner_role</em>, <em>utter_order</em>, <em>utterlen_target</em>, <em>utterlen_aligner</em>, <em>semantic</em>, <em>lexical</em>, <em>syn2nd</em>, <em>syn3nd</em> and <em>syntax</em></p>
 <pre class="r"><code>write.csv(df_composite, &quot;../Data/Step1_PrepareFeatures.csv&quot;, row.names=FALSE)</code></pre>
+<pre class="r"><code># write.csv(df_composite, &quot;../Data/Step1_PrepareFeatures_Baseline.csv&quot;, row.names=FALSE)</code></pre>
 </div>
 </div>
 

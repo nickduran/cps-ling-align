@@ -45,9 +45,9 @@ Code below runs the same for either actual and baseline
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 PennPOS_keep = PennPOS_keep %>% select(condition_info, partner_direction, time, utterance_length1, utterance_length2, 
-                               lexical_lem1, lexical_lem2, lexical_lem3, lexical_tok1, lexical_tok2, lexical_tok3, 
-                               syntax_penn_lem2, syntax_penn_tok2, syntax_penn_lem3, syntax_penn_tok3, 
-                               cosine_semanticL)
+                lexical_lem1, lexical_lem2, lexical_lem3, lexical_tok1, lexical_tok2, lexical_tok3, 
+                syntax_penn_lem2, syntax_penn_tok2, syntax_penn_lem3, syntax_penn_tok3, 
+                cosine_semanticL)
 
 StanPOS_keep = StanPOS_keep %>% select(condition_info, partner_direction, time, syntax_stan_lem2, syntax_stan_tok2, syntax_stan_lem3, syntax_stan_tok3)
 
@@ -57,10 +57,10 @@ mergekeep = left_join(PennPOS_keep,StanPOS_keep)
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 
 PennPOS_remove = PennPOS_remove %>% select(condition_info, partner_direction, time, 
-                                     syntax_penn_lem2, syntax_penn_lem3, syntax_penn_tok2, syntax_penn_tok3) %>% rename(syntax_penn_lem2_nodp = syntax_penn_lem2, syntax_penn_lem3_nodp = syntax_penn_lem3, syntax_penn_tok2_nodp = syntax_penn_tok2, syntax_penn_tok3_nodp = syntax_penn_tok3)
+                  syntax_penn_lem2, syntax_penn_lem3, syntax_penn_tok2, syntax_penn_tok3) %>% rename(syntax_penn_lem2_nodp = syntax_penn_lem2, syntax_penn_lem3_nodp = syntax_penn_lem3, syntax_penn_tok2_nodp = syntax_penn_tok2, syntax_penn_tok3_nodp = syntax_penn_tok3)
 
 StanPOS_remove = StanPOS_remove %>% select(condition_info, partner_direction, time,
-                                     syntax_stan_lem2, syntax_stan_lem3, syntax_stan_tok2, syntax_stan_tok3) %>% rename(syntax_stan_lem2_nodp = syntax_stan_lem2, syntax_stan_lem3_nodp = syntax_stan_lem3, syntax_stan_tok2_nodp = syntax_stan_tok2, syntax_stan_tok3_nodp = syntax_stan_tok3)
+                  syntax_stan_lem2, syntax_stan_lem3, syntax_stan_tok2, syntax_stan_tok3) %>% rename(syntax_stan_lem2_nodp = syntax_stan_lem2, syntax_stan_lem3_nodp = syntax_stan_lem3, syntax_stan_tok2_nodp = syntax_stan_tok2, syntax_stan_tok3_nodp = syntax_stan_tok3)
 
 mergeremove = left_join(PennPOS_remove,StanPOS_remove)
 ```
@@ -106,11 +106,11 @@ pander(names(df_composite))
 ```
 
 ```{r}
-# write.csv(df_composite, "../Data/Step1_PrepareFeatures.csv", row.names=FALSE)
+write.csv(df_composite, "../Data/Step1_PrepareFeatures.csv", row.names=FALSE)
 ```
 
 ```{r}
-write.csv(df_composite, "../Data/Step1_PrepareFeatures_Baseline.csv", row.names=FALSE)
+# write.csv(df_composite, "../Data/Step1_PrepareFeatures_Baseline.csv", row.names=FALSE)
 ```
 
 

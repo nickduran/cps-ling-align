@@ -21,8 +21,9 @@ library(pander)
 
 ```{r}
 main.data = read_csv("../Data/Step1_PrepareFeatures.csv", show_col_types = FALSE)
-# main.data = read_csv("align_block_splitlevel_bs.csv", show_col_types = FALSE)
 ```
+
+Code below just generates a new variable for how many overall turns were present in each level and adds to the main datasheet
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 turns = main.data %>% group_by(Team, School, Block, Level, revisited) %>%
@@ -30,19 +31,213 @@ turns = main.data %>% group_by(Team, School, Block, Level, revisited) %>%
 main.data = left_join(main.data, turns)
 ```
 
-#### Step 1
+# GENERATE WHAT ACTUALLY APPEARS IN PAPER
 
-> Get some stats on relationship between # of turns, trophy completions, and block
+```{r}
+## how many original levels
+levels1 = main.data %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels1)
+```
+
+Number of levels after removing short levels of fewer than 20 turns
 
 ```{r}
 rmTurns = 20
 
-## how many original levels
-levels1 = main.data %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels1)
+df.20.more = filter(main.data, numberturns >= rmTurns)
+## how many levels after 20 turns, also same data as models, removing extraordinarily long single utterances
+levels2 = filter(main.data, numberturns >= rmTurns) %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels2)
 
-## how many levels after 20 turns
-levels2 = filter(main.data, numberturns >= rmTurns) %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels2)
 ```
+
+Of the longer levels, number of turns and words per turn
+
+```{r}
+# overallturnswords = df.20.more %>% group_by(Team, School, Block, Level, revisited, trophy) %>% 
+#   summarize_at(c("numberturns", "utterlen_aligner"), list(mean, sd)); overallturnswords 
+
+overallturnswords = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
+  summarize_at(c("numberturns", "utterlen_aligner"), list(mean, sd)); colnames(overallturnswords) <- c("Mturn", "Mutterlen", "SDturn", "SDutterlen"); overallturnswords
+
+```
+
+Of the longer levels, outcomes based on coins
+
+```{r}
+## how many trophies distributed across reduced levels
+levtab2 = table(levels2$trophy);  
+levtab2
+```
+
+Generate table showing time and turn information across outcomes, also generate statistical tests comparing these measures for outcomes
+
+```{r}
+levBlotab2 = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
+  group_by(trophy) %>% 
+  summarize_at(c("level_duration", "numberturns"), list(mean = mean, sd = sd)) %>%
+  mutate(
+    trophy = case_when(
+      trophy == "none" ~ "None",
+      trophy == "silver" ~ "Silver",
+      trophy == "gold" ~ "Gold") %>% 
+      as.factor %>% 
+      fct_relevel("None", "Silver", "Gold")
+  )
+
+```
+
+```{r}
+p_value_one <- tibble(
+  x = c("None", "None", "Silver", "Silver"),
+  y = c(775, 800, 800, 775)
+)
+
+p_value_two <- tibble(
+  x = c("Silver", "Silver", "Gold", "Gold"),
+  y = c(625, 650, 650, 625)
+)
+
+fig1 = levBlotab2 %>% 
+  ggplot(aes(trophy, level_duration_mean)) +
+  geom_col(aes(fill = trophy), color = "black", width = 0.85) +
+  geom_errorbar(aes(ymin = level_duration_mean - level_duration_sd,
+                    ymax = level_duration_mean + level_duration_sd),
+                color = "#22292F",
+                width = .1) +
+  geom_line(data = p_value_one, 
+            aes(x = x, y = y, group = 1)) +
+  geom_line(data = p_value_two,
+            aes(x = x, y = y, group = 1)) +
+  annotate("text", x = 1.5, y = 810, 
+           label = "***",
+           size = 8, color = "#22292F") +
+  annotate("text", x = 2.5, y = 660,
+           label = "***",
+           size = 8, color = "#22292F") +
+  scale_fill_grey(start = 0.3) +
+  scale_y_continuous(limits = c(0, 865), expand = c(0, 0)) +
+  guides(fill = "none") +
+  theme_minimal() +
+  labs(
+    x = "",
+    y = "Mean Level Duration",
+    title = "Duration",
+    # caption = "Error bars indicate standard deviations"
+  ) + 
+  
+  theme_bw() +
+  theme(plot.title=element_text(size=14,face="bold"), # theme_light()
+        axis.text.y=element_text(size=12),
+        axis.ticks.y=element_blank(),
+        axis.text.x=element_text(size=12, face="bold"),
+        axis.title=element_text(size=12,face="bold"),
+        # plot.caption = element_text(hjust = 0),
+        strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"),
+    axis.line = element_line(color = "#3D4852"),
+    axis.ticks = element_line(color = "#3D4852"),
+    panel.grid.major.y = element_line(color = "#DAE1E7"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank()
+  )
+```
+
+```{r}
+
+p_value_one <- tibble(
+  x = c("Silver", "Silver", "Gold", "Gold"),
+  y = c(122, 127, 127, 122)
+)
+
+p_value_two <- tibble(
+  x = c("None", "None", "Silver", "Silver"),
+  y = c(137, 142, 142, 137)
+)
+
+fig2 = levBlotab2 %>% 
+  ggplot(aes(trophy, numberturns_mean)) +
+  geom_col(aes(fill = trophy), color = "black", width = 0.85) +
+  geom_errorbar(aes(ymin = numberturns_mean - numberturns_sd,
+                    ymax = numberturns_mean + numberturns_sd),
+                color = "#22292F",
+                width = .1) +
+  geom_line(data = p_value_one, 
+            aes(x = x, y = y, group = 1)) +
+  geom_line(data = p_value_two,
+            aes(x = x, y = y, group = 1)) +
+  annotate("text", x = 2.5, y = 129, 
+           label = "***",
+           size = 8, color = "#22292F") +
+  annotate("text", x = 1.5, y = 144,
+           label = "*",
+           size = 8, color = "#22292F") +
+  scale_fill_grey(start = 0.3) +
+  scale_y_continuous(limits = c(0, 155), expand = c(0, 0)) +
+  guides(fill = "none") +
+  theme_minimal() +
+  labs(
+    x = "",
+    y = "Mean Turns",
+    title = "Turns",
+    caption = "*p<.05, ***p<.001"
+  ) + 
+
+  theme_bw() +
+  theme(plot.title=element_text(size=14,face="bold"), # theme_light()
+        axis.text.y=element_text(size=12),
+        axis.ticks.y=element_blank(),
+        axis.text.x=element_text(size=12, face="bold"),
+        axis.title=element_text(size=12,face="bold"),
+        plot.caption = element_text(size=12),
+        strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"),
+    axis.line = element_line(color = "#3D4852"),
+    axis.ticks = element_line(color = "#3D4852"),
+    panel.grid.major.y = element_line(color = "#DAE1E7"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank()
+  )
+fig2
+```
+
+```{r}
+library(patchwork)
+durationPlots = fig1 + fig2
+durationPlots
+```
+```{r}
+# ggsave(filename = "Figs/trophy_levels_time.png",width = 8, height = 4.5, dpi = 300, units = "in", device='png')
+```
+
+Statistical significance tests
+
+```{r}
+levBlotab3 = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
+  dplyr::select(1:8, "numberturns") %>% unique()
+
+library(lme4)
+library(emmeans)
+library(multcomp)
+library(car)
+
+levBlotab3 = levBlotab3 %>% mutate(TeamRE = paste0(Team, School))
+a1 = lmer(level_duration ~ trophy + (1|TeamRE), levBlotab3); summary(a1); Anova(a1, type = 2)
+a1.emm <- emmeans(a1, ~ trophy)
+pairs(a1.emm, adjust = "none")
+
+## same as above, but cleaner and can be used with lmer if desired
+# a1 = aov(level_duration ~ trophy, levBlotab3); summary(a1) 
+# pairwise.t.test(levBlotab3$level_duration, levBlotab3$trophy, p.adj = "bonf")
+
+a2 = lmer(numberturns ~ trophy + (1|TeamRE), levBlotab3); summary(a2); Anova(a2, type = 2)
+a2.emm <- emmeans(a2, ~ trophy)
+pairs(a2.emm, adjust = "none")
+
+```
+
+
+# DEEPER DIVE INTO DESCRIPTIVE DATA OF PERFORMANCE
+
+#### Step 1
+
+> Get a few stats on relationship between # of turns, trophy completions, and block
 
 ```{r}
 ## how many trophies distributed across all levels; how many blocks?
@@ -192,58 +387,8 @@ levBlotab2 = df.20.more %>% group_by(factor(trophy, levels=c("none", "silver", "
 
 ```
 
-############# GENERATE WHAT ACTUALLY APPEARS IN PAPER ###############
 
-Original
-<!-- Overall, teams attempted more levels as rounds progressed (R1:185, R2:213, R3:232). Participants also spent less time in each level across rounds (R1: M=465.64 seconds, R2: M=428.01, R3: M=366.15) while using a similar number of turns (R1: M=59.34, R2: M=55.44, R3: M=49.12).  -->
-
-<!-- The proportion of gold coins was low across all rounds (R1: 14.05\%, R2: 15.49\%, R3: 20.69\%) whereas the proportion of silver coins was higher (R1: 45.41\%, R2: 34.74\%, R3: 36.21\%) and equal to the proportion of levels that went unsolved (R1: 40.54\%, R2: 49.77\%, R3: 43.10\%).  -->
-
-<!-- Another notable pattern was that teams generally took less time and required fewer turns in levels where they earned a gold (247.92 seconds; 38.25 turns) as compared to levels where they earned a silver (387.15 seconds; 54.37 turns) and for levels that went unsolved (486.08 seconds; 60.25 turns).  -->
-
-Current
-
-<!-- This allowed 630 (57.54\%) of the levels to be retained for evaluation (number of turns: M=54.25, SD=34.92; words per turn: M=11.48, SD=3.03).  -->
-
-```{r}
-levels1 = main.data %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels1)
-
-rmTurns = 20
-## how many levels after 20 turns, also same data as models, removing extraordinarily long single utterances
-levels2 = filter(main.data, numberturns >= rmTurns) %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels2)
-
-```
-
-<!-- This allowed 630 (57.54\%) of the levels to be retained for evaluation (number of turns: M=54.25, SD=34.92; words per turn: M=11.48, SD=3.03).  -->
-
-```{r}
-# overallturnswords = df.20.more %>% group_by(Team, School, Block, Level, revisited, trophy) %>% 
-#   summarize_at(c("numberturns", "utterlen_aligner"), list(mean, sd)); overallturnswords 
-
-overallturnswords = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
-  summarize_at(c("numberturns", "utterlen_aligner"), list(mean, sd)); colnames(overallturnswords) <- c("Mturn", "Mutterlen", "SDturn", "SDutterlen"); overallturnswords
-```
-
-<!-- Of the 630 reduced levels, 107 resulted in a gold coin, 242 in a silver coin, and 281 went unsolved. As shown in Table X, teams generally took less time and required fewer turns in levels where they earned a gold, as compared to levels where they earned a silver and for levels that went unsolved.  -->
-
-```{r}
-levBlotab2 = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
-  group_by(factor(trophy, levels=c("none", "silver", "gold"))) %>% 
-  summarize_at(c("level_duration", "numberturns"), list(mean, sd)); colnames(levBlotab2) <- c("Trophy", "Mduration", "Mturns", "SDduration", "SDturns"); levBlotab2 
-
-## TODO: look at the statistical significance of change over time... 
-
-```
-
-<!-- In considering performance over rounds where participants have an opportunity to improve their game-play and become more comfortable with one another, the teams, on average, attempted more levels as rounds progressed, and spent less time in each level (see Table X). And while they used a similar number of turns for the initial two rounds, there was a statistically drop-off in number of turns by the final round. The number of gold trophies earned in each round, adjusted for the number of levels attempted for that round, was overall low and stayed consistent across rounds. The proportion of silver trophies was overall higher, but also stayed consistent across rounds.  -->
-
-<!-- A complete breakdown of time taken per level and number of turns for outcome and round is provided in the supplementary section [need to generate].   -->
-
-############# OTHER ###############
-
-<!-- > problem with anything involving trophies is that these are the more difficult levels merely because it took more turns to get to a solution -->
-
-<!-- > with levels under 20 turns, much greater likelihood to get a gold 48.68% vs. 18.19% and less likely to go unsolved (32.55% vs. 46.52%) -->
+############# OTHER: CAN BE IGNORED ###############
 
 ```{r}
 # levels1 = df.sl2 %>% select(Team, School, aligner_score) %>% distinct()

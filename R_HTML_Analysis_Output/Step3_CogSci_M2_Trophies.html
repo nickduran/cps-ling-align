@@ -11,7 +11,7 @@
 
 <meta name="author" content="Nick Duran" />
 
-<meta name="date" content="2022-01-15" />
+<meta name="date" content="2022-03-28" />
 
 <title>Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2: Trophies</title>
 
@@ -167,7 +167,7 @@ pre code {
 
 <h1 class="title toc-ignore">Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2: Trophies</h1>
 <h4 class="author">Nick Duran</h4>
-<h4 class="date">01/15/22</h4>
+<h4 class="date">03/28/22</h4>
 
 </div>
 
@@ -181,9 +181,6 @@ library(pander)
 
 rm(list=ls())</code></pre>
 <pre class="r"><code>main.data = read.csv(&quot;../Data/Step1_PrepareFeatures.csv&quot;)
-
-###### BASELINE DATA FOR COMPARISON ########
-# main.data = read.csv(&quot;../Data/align_block_splitlevel_bs.csv&quot;)
 
 source(&quot;../R_Helper/Step3_helper.R&quot;)
 main.data.20 = variable_prep(main.data)
@@ -211,10 +208,18 @@ library(strengejacke)</code></pre>
 <pre class="r"><code>main.data.20$trophyNum &lt;- ifelse(main.data.20$trophy == &quot;none&quot;, 1, 
   ifelse(main.data.20$trophy == &quot;silver&quot; | main.data.20$trophy == &quot;trophy&quot;, 2, 
   ifelse(main.data.20$trophy == &quot;gold&quot;, 3, NA)))</code></pre>
+<!-- Don't I want to compare gold to silver and none? If so, gold should be coded as "1" -->
 <!-- # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0) -->
 <!-- # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA)) -->
-<div id="combine-all-variables" class="section level5">
-<h5>Combine all variables</h5>
+<!-- see https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/ for rationale of setting up gold as "3" -->
+<!-- a three level variable called apply, with levels “unlikely” = 1, “somewhat likely” = 2 , and “very likely” = 3, coded 1, 2, and 3" ; -->
+<!-- For students whose parents did attend college, the odds of being more likely (i.e., very or somewhat likely versus unlikely = 1) to apply is 2.85 times that of students whose parents did not go to college, holding constant all other variables. -->
+<!-- HOW IT IS IN THE PAPER: the odds of getting a coin (i.e., gold or silver versus none = 1) decreases with increasing alignment -->
+<!-- COULD BE: the odds of suboptimality (i.e., none or silver versus gold = 1) increases with increasing alignment OK, this is signficant as well. its the inverse. So, we can say as we approach gold, less likely... <--
+
+
+##### Combine all variables
+
 <!-- What is the rationale of running all three together? Doing them separately?  -->
 <!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
 <!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
@@ -251,279 +256,11 @@ clmm_all &lt;- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center
 ## -------------------------------------
 ## SD (Intercept: team_id) |       1.003
 ## SD (Residual)           |       1.360</code></pre>
-<pre class="r"><code># performance::icc(clmm_all)</code></pre>
-<pre class="r"><code>tab_model(clmm_all, order.terms = c(1,2,3,4,12,13,14,5,6,7,8,9,10,11))</code></pre>
-<table style="border-collapse:collapse; border:none;">
-<tr>
-<th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">
- 
-</th>
-<th colspan="3" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">
-as.factor(trophyNum)
-</th>
-</tr>
-<tr>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  text-align:left; ">
-Predictors
-</td>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
-Odds Ratios
-</td>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
-CI
-</td>
-<td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  ">
-p
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-1|2
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-1.27
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-1.01 – 1.58
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>0.038</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-2|3
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-20.60
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-16.42 – 25.85
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-lexical
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-1.05
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.89 – 1.23
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.551
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-syntax
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.85
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.64 – 1.14
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.287
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-center(lexical) *<br>center(ordering prop)
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.84
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.48 – 1.44
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.519
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-center(syntax) *<br>center(ordering prop)
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.80
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.30 – 2.13
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.649
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-center(semantic) *<br>center(ordering prop)
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.98
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.57 – 1.68
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.937
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-semantic
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.84
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.72 – 0.99
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>0.035</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-level durationZ
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.29
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.28 – 0.30
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-relative start timeZ
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.38
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.37 – 0.39
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-revisited [reattempt]
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.67
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.57 – 0.78
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-Concept [PoT]
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-2.73
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-2.58 – 2.90
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-Block l [linear]
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.63
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.60 – 0.66
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-Block l [quadratic]
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-1.75
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-1.68 – 1.83
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>&lt;0.001</strong>
-</td>
-</tr>
-<tr>
-<td colspan="4" style="font-weight:bold; text-align:left; padding-top:.8em;">
-Random Effects
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-σ<sup>2</sup>
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-3.29
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-τ<sub>00</sub> <sub>team_id</sub>
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-1.01
-</td>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-ICC
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-0.23
-</td>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-N <sub>team_id</sub>
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-93
-</td>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">
-Observations
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="3">
-32304
-</td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-Marginal R<sup>2</sup> / Conditional R<sup>2</sup>
-</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-0.277 / 0.446
-</td>
-</tr>
-</table>
-<pre class="r"><code># tab_model(clmm_all)</code></pre>
+<pre class="r"><code>performance::icc(clmm_all)</code></pre>
+<pre><code>## # Intraclass Correlation Coefficient
+## 
+##      Adjusted ICC: 0.234
+##   Conditional ICC: 0.169</code></pre>
 <table style="border-collapse:collapse; border:none;">
 <tr>
 <th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">
@@ -702,7 +439,6 @@ Concept [PoT]
 </td>
 </tr>
 </table>
-</div>
 <div id="lexical" class="section level5">
 <h5>Lexical</h5>
 <!-- https://cran.r-project.org/web/packages/ordinal/vignettes/clmm2_tutorial.pdf -->
@@ -1025,6 +761,10 @@ Concept [PoT]
 <pre class="r"><code>clmm_sem &lt;- clmm(as.factor(trophyNum) ~ semantic + center(semantic):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = &quot;logit&quot;)</code></pre>
+<pre class="r"><code>## still significant without interaction with time
+# clmm_sem &lt;- clmm(as.factor(trophyNum) ~ semantic + 
+#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+#               (1|team_id), data = main.data.20, link = &quot;logit&quot;)</code></pre>
 <pre class="r"><code>model_parameters(clmm_sem, digits=3)</code></pre>
 <pre><code>## # Fixed Effects
 ## 
@@ -1173,7 +913,8 @@ Concept [PoT]
 </td>
 </tr>
 </table>
-<pre class="r"><code>save.image(file = &quot;trophies.RData&quot;)</code></pre>
+<pre class="r"><code># save.image(file = &quot;trophies.RData&quot;)
+save.image(file = &quot;trophies_baseline.RData&quot;)</code></pre>
 </div>
 </div>
 </div>

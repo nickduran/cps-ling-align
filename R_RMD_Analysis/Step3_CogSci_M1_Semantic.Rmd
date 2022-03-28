@@ -1,7 +1,7 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1: Semantic"
 author: "Nick Duran"
-date: 01/15/22
+date: 03/28/22
 output: html_document
 ---
 
@@ -24,11 +24,11 @@ rm(list=ls())
 ```{r}
 main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
 
+###### BASELINE DATA FOR COMPARISON ########
+# main.data = read.csv("../Data/Step1_PrepareFeatures_Baseline.csv")
+
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
-
-###### BASELINE DATA FOR COMPARISON ########
-# main.data = read.csv("../Data/align_block_splitlevel_bs.csv")
 
 pander(names(main.data.20))
 ```
@@ -126,7 +126,7 @@ lrtest(lmer_sem1.null,lmer_sem1)
 Let's get to interpreting the effects. 
 
 ```{r}
-model_parameters(lmer_sem2, digits=3)
+model_parameters(lmer_sem2, digits=3, p_digits=3, ci_digits=3)
 ```
 
 ### Step 3: Create coefficient table
@@ -153,16 +153,13 @@ tab_model(lmer_sem2,
 mod1 = plot_model(lmer_sem2, type = "eff", terms = c("ordering_prop"))
 mod1 + labs(title="Semantic Alignment",
         x ="Ordering", y = "Cosine")
-save_plot("Figs/semantic_time.png")
+# save_plot("Figs/semantic_time.png")
 ```
 
 ```{r}
-save.image(file = "semantic.RData")
+# save.image(file = "semantic.RData")
+save.image(file = "semantic_baseline.RData")
 ```
-
-
-
-
 
 
 

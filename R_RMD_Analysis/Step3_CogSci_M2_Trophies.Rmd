@@ -1,7 +1,7 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2: Trophies"
 author: "Nick Duran"
-date: 01/15/22
+date: 03/28/22
 output: html_document
 ---
 
@@ -23,9 +23,6 @@ rm(list=ls())
 
 ```{r}
 main.data = read.csv("../Data/Step1_PrepareFeatures.csv")
-
-###### BASELINE DATA FOR COMPARISON ########
-# main.data = read.csv("../Data/align_block_splitlevel_bs.csv")
 
 source("../R_Helper/Step3_helper.R")
 main.data.20 = variable_prep(main.data)
@@ -57,8 +54,30 @@ main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 1,
   ifelse(main.data.20$trophy == "silver" | main.data.20$trophy == "trophy", 2, 
   ifelse(main.data.20$trophy == "gold", 3, NA)))
 ```
+
+```{r, echo=FALSE}
+# What is just the overall amount of alignment for each linguistic type?
+# summtabtrop = main.data.20 %>% 
+#   select(trophy, lexical, syntax, semantic) %>%
+#   group_by(trophy) %>%
+#   summarise(across(everything(), .f = list(mn = mean, sd = sd), na.rm = TRUE))
+# panderOptions('table.split.table', 100)
+# pandoc.table(summtabtrop, style = 'simple', digits=3)
+```
+
+
+<!-- Don't I want to compare gold to silver and none? If so, gold should be coded as "1" -->
 <!-- # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0) -->
 <!-- # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA)) -->
+
+
+<!-- see https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/ for rationale of setting up gold as "3" -->
+<!-- a three level variable called apply, with levels “unlikely” = 1, “somewhat likely” = 2 , and “very likely” = 3, coded 1, 2, and 3" ; -->
+<!-- For students whose parents did attend college, the odds of being more likely (i.e., very or somewhat likely versus unlikely = 1) to apply is 2.85 times that of students whose parents did not go to college, holding constant all other variables. -->
+<!-- HOW IT IS IN THE PAPER: the odds of getting a coin (i.e., gold or silver versus none = 1) decreases with increasing alignment -->
+
+<!-- COULD BE: the odds of suboptimality (i.e., none or silver versus gold = 1) increases with increasing alignment OK, this is signficant as well. its the inverse. So, we can say as we approach gold, less likely... <--
+
 
 ##### Combine all variables
 
@@ -85,10 +104,8 @@ performance::icc(clmm_all)
 
 ```{r, echo=FALSE}
 tab_model(clmm_all,
-
           rm.terms = c("1|2", "2|3", "Block.l.Q"),
           order.terms = c(1,2,3,9,10,11,8,4,5,6,7),
-          
           pred.labels = c("semantic"="Semantic", "syntax"="Syntax", "lexical"="Lexical",
                           "center(semantic):center(ordering_prop)"="Semantic * Time",
                           "center(lexical):center(ordering_prop)"="Lexical * Time",
@@ -98,8 +115,6 @@ tab_model(clmm_all,
                           "relative_start_timeZ"="Level Start Time",
                           "ConceptPoT" = "Concept [PoT]", 
                           "revisitedreattempt" = "Revisit [yes]"), 
-
-          
           digits = 3,
           digits.re = 3,
           dv.labels = c("Trophy"),
@@ -159,6 +174,13 @@ clmm_syn <- clmm(as.factor(trophyNum) ~ syntax + center(syntax):center(ordering_
               (1|team_id), data = main.data.20, link = "logit")
 ```
 
+```{r, echo=FALSE}
+# approaching significance
+# clmm_syn <- clmm(as.factor(trophyNum) ~ syntax +  
+#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+#               (1|team_id), data = main.data.20, link = "logit")
+```
+
 ```{r}
 model_parameters(clmm_syn, digits=3)
 # performance::icc(clmm_syn)
@@ -191,6 +213,13 @@ tab_model(clmm_syn,
 clmm_sem <- clmm(as.factor(trophyNum) ~ semantic + center(semantic):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = "logit")
+```
+
+```{r}
+## still significant without interaction with time
+# clmm_sem <- clmm(as.factor(trophyNum) ~ semantic + 
+#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
+#               (1|team_id), data = main.data.20, link = "logit")
 ```
 
 ```{r}
