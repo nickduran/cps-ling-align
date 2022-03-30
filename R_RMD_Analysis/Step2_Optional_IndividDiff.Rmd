@@ -1,7 +1,6 @@
 ---
 title: "Linguistic Alignment and Collaborative Problem-Solving in Online and Team-Based Interactions - SPLIT-LEVEL ALL BLOCKS"
-author: "Nick Duran"
-date: 10/14/21
+date: 03/03/22
 output: html_document
 ---
 
@@ -15,16 +14,11 @@ library(tidyverse)
 library(pander)
 ```
 
-
 ```{r}
-# **person.csv contains the following which is most relevant for us**:
-#   + see: https://docs.google.com/document/d/1ihz2GNXj3g9yaopu1xGD-7x9CEW9qwwCRkWE98o_9rM/edit#
-
 person = read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person.csv', sep=",") 
 person = person %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
   select(-userID)
 person = person %>% select(c(2, 57, 1, 58, 59, everything()), -school) %>% rename(School_Team = "team")
-
 ```
 
 ### Group Makeup / Group Level
@@ -107,9 +101,6 @@ individ_measures1 = person %>% select(School_Team, School, Team, participant, Ph
   * XQ_know
 
 ```{r}
-# **person_block.csv contains the following which is most relevant for us**:
-#   + see: https://docs.google.com/document/d/1ihz2GNXj3g9yaopu1xGD-7x9CEW9qwwCRkWE98o_9rM/edit#
-
 personblock = read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person_block.csv', sep=",")
 personblock = personblock %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
   select(-userID)

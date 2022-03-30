@@ -9,7 +9,6 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Nick Duran" />
 
 <meta name="date" content="2022-03-28" />
 
@@ -166,7 +165,6 @@ pre code {
 
 
 <h1 class="title toc-ignore">Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2: Trophies</h1>
-<h4 class="author">Nick Duran</h4>
 <h4 class="date">03/28/22</h4>
 
 </div>
@@ -208,26 +206,7 @@ library(strengejacke)</code></pre>
 <pre class="r"><code>main.data.20$trophyNum &lt;- ifelse(main.data.20$trophy == &quot;none&quot;, 1, 
   ifelse(main.data.20$trophy == &quot;silver&quot; | main.data.20$trophy == &quot;trophy&quot;, 2, 
   ifelse(main.data.20$trophy == &quot;gold&quot;, 3, NA)))</code></pre>
-<!-- Don't I want to compare gold to silver and none? If so, gold should be coded as "1" -->
-<!-- # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0) -->
-<!-- # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA)) -->
-<!-- see https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/ for rationale of setting up gold as "3" -->
-<!-- a three level variable called apply, with levels “unlikely” = 1, “somewhat likely” = 2 , and “very likely” = 3, coded 1, 2, and 3" ; -->
-<!-- For students whose parents did attend college, the odds of being more likely (i.e., very or somewhat likely versus unlikely = 1) to apply is 2.85 times that of students whose parents did not go to college, holding constant all other variables. -->
-<!-- HOW IT IS IN THE PAPER: the odds of getting a coin (i.e., gold or silver versus none = 1) decreases with increasing alignment -->
-<!-- COULD BE: the odds of suboptimality (i.e., none or silver versus gold = 1) increases with increasing alignment OK, this is signficant as well. its the inverse. So, we can say as we approach gold, less likely... <--
-
-
-##### Combine all variables
-
-<!-- What is the rationale of running all three together? Doing them separately?  -->
-<!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
-<!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
-<pre class="r"><code># clmm_all &lt;- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
-#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
-#               (1|team_id), data = main.data.20, link = &quot;logit&quot;)
-
-clmm_all &lt;- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(lexical) + center(syntax) + center(semantic)):center(ordering_prop) + 
+<pre class="r"><code>clmm_all &lt;- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(lexical) + center(syntax) + center(semantic)):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = &quot;logit&quot;)</code></pre>
 <pre class="r"><code>model_parameters(clmm_all, digits=3)</code></pre>
@@ -598,8 +577,6 @@ Concept [PoT]
 </td>
 </tr>
 </table>
-<p>For interpretation:</p>
-<p>“As lexical increases by one unit, the odds of observing category 0 of TROPHY vs. other 2 categories increase by XX%”</p>
 </div>
 <div id="syntactic" class="section level5">
 <h5>Syntactic</h5>
@@ -757,7 +734,6 @@ Concept [PoT]
 </div>
 <div id="semantic" class="section level5">
 <h5>Semantic</h5>
-<!-- ## something to note with semantic is there are ~1700 rows/utterances that have NA values because one of the utterances must contain words not in the semantic space - does this get addressed anywhere in manuscript? -->
 <pre class="r"><code>clmm_sem &lt;- clmm(as.factor(trophyNum) ~ semantic + center(semantic):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = &quot;logit&quot;)</code></pre>
@@ -913,8 +889,7 @@ Concept [PoT]
 </td>
 </tr>
 </table>
-<pre class="r"><code># save.image(file = &quot;trophies.RData&quot;)
-save.image(file = &quot;trophies_baseline.RData&quot;)</code></pre>
+<pre class="r"><code>save.image(file = &quot;trophies.RData&quot;)</code></pre>
 </div>
 </div>
 </div>

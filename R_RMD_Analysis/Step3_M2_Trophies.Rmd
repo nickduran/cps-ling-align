@@ -1,6 +1,5 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 2: Trophies"
-author: "Nick Duran"
 date: 03/28/22
 output: html_document
 ---
@@ -66,32 +65,7 @@ main.data.20$trophyNum <- ifelse(main.data.20$trophy == "none", 1,
 ```
 
 
-<!-- Don't I want to compare gold to silver and none? If so, gold should be coded as "1" -->
-<!-- # main.data.20$trophyBin <- ifelse(main.data.20$trophyNum > 0, 1, 0) -->
-<!-- # main.data.20$trophyGoldOrSilver <- ifelse(main.data.20$trophy == "gold", 1, ifelse(main.data.20$trophy == "silver", 0, NA)) -->
-
-
-<!-- see https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/ for rationale of setting up gold as "3" -->
-<!-- a three level variable called apply, with levels “unlikely” = 1, “somewhat likely” = 2 , and “very likely” = 3, coded 1, 2, and 3" ; -->
-<!-- For students whose parents did attend college, the odds of being more likely (i.e., very or somewhat likely versus unlikely = 1) to apply is 2.85 times that of students whose parents did not go to college, holding constant all other variables. -->
-<!-- HOW IT IS IN THE PAPER: the odds of getting a coin (i.e., gold or silver versus none = 1) decreases with increasing alignment -->
-
-<!-- COULD BE: the odds of suboptimality (i.e., none or silver versus gold = 1) increases with increasing alignment OK, this is signficant as well. its the inverse. So, we can say as we approach gold, less likely... <--
-
-
-##### Combine all variables
-
-<!-- What is the rationale of running all three together? Doing them separately?  -->
-
-<!-- From Dideriksen: "to assess whether the frequency of given grounding mechanisms was uniquely informative as to performance, we also built models including all grounding mechanisms as predictors. This corresponds to asking whether each predictor was still related to performance even when we already know the frequency of the other grounding mechanisms." -->
-
-<!-- A model including all predictors showed that not all predictors maintained evidence of relation to performance. This indicates that not all grounding mechanisms contribute unique information to our understanding of effective conversational coordination. -->
-
 ```{r}
-# clmm_all <- clmm(as.factor(trophyNum) ~ (center(lexical) + center(syntax) + center(semantic))*center(ordering_prop) + 
-#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
-#               (1|team_id), data = main.data.20, link = "logit")
-
 clmm_all <- clmm(as.factor(trophyNum) ~ lexical + syntax + semantic + (center(lexical) + center(syntax) + center(semantic)):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = "logit")
@@ -162,23 +136,12 @@ tab_model(clmm_lex,
           use.viewer = TRUE)
 ```
 
-For interpretation:
-
-"As lexical increases by one unit, the odds of observing category 0 of TROPHY vs. other 2 categories increase by XX%"
-
 ##### Syntactic
 
 ```{r}
 clmm_syn <- clmm(as.factor(trophyNum) ~ syntax + center(syntax):center(ordering_prop) +  
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
               (1|team_id), data = main.data.20, link = "logit")
-```
-
-```{r, echo=FALSE}
-# approaching significance
-# clmm_syn <- clmm(as.factor(trophyNum) ~ syntax +  
-#               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
-#               (1|team_id), data = main.data.20, link = "logit")
 ```
 
 ```{r}
@@ -208,7 +171,6 @@ tab_model(clmm_syn,
 
 ##### Semantic
 
-<!-- ## something to note with semantic is there are ~1700 rows/utterances that have NA values because one of the utterances must contain words not in the semantic space - does this get addressed anywhere in manuscript? -->
 ```{r}
 clmm_sem <- clmm(as.factor(trophyNum) ~ semantic + center(semantic):center(ordering_prop) + 
               level_durationZ + relative_start_timeZ + revisited + Concept + Block.l + 
@@ -250,35 +212,6 @@ tab_model(clmm_sem,
 ```{r}
 save.image(file = "trophies.RData")
 ```
-
-
-
-
-
-```{r, echo=FALSE}
-# NOTES: 01/15/22
-
-## FINAL MODEL (single predictors) (for paper, just report these, but if asked, can report with all included)
-## I think all these predictors are allowable and justifiable... might want to see https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5543767/ for further justification
-## also, for adding ordering_prop (that justifies repeated observations, but even without it, still shouldn't be a problem with it given a repeated measure for team)
-
-###############################################################################
-
-# For ordinal, can talk about the odds-ratio for some predictor as being X, and this can be interpreted, in terms of the outcome with multiple levels, as a cumulative odds of some percentage of something happening. See:
-# https://www.sciencedirect.com/science/article/pii/S0165032719303969
-# https://cran.r-project.org/web/packages/ordinal/vignettes/clmm2_tutorial.pdf
-# 
-# For a good discussion of thresholds/cutoffs and what they mean. See:
-# https://www.statisticssolutions.com/how-to-interpret-an-ordinal-logistic-regression/
-# https://stats.idre.ucla.edu/r/faq/ologit-coefficients/
-# https://www.sciencedirect.com/science/article/pii/S0165032719303969
-# 
-# Also, a handy reference to the ordinal package in R: https://cran.r-project.org/web/packages/ordinal/ordinal.pdf
-# 
-# Lastly, for thresholds, these don't necessarily need to be reported. I believe they confirm the assumption of these sorts of models (ordinal) of what is called a "proportional odds assumption" or "parallel lines test." This is assuming that the odds are equal across the levels of the outcome. In our example, the proportional odds assumption means that the odds of being no-coin versus silver or gold (j=1) is the same as the odds of being no-coin and silver versus gold (j=2). But not 100% as to whether having a significant p-value here is what this is indicating. But what is for sure is that the thresholds (coefficients) reported are necessary for computing the predictor coefficients (this is what the two linked papers discuss).
-```
-
-
 
 
 

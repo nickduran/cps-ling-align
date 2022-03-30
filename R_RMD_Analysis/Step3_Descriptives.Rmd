@@ -1,7 +1,6 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Descriptives"
-author: "Nick Duran"
-date: 10/14/21
+date: 03/30/22
 output: html_document
 ---
 
@@ -44,7 +43,7 @@ Number of levels after removing short levels of fewer than 20 turns
 rmTurns = 20
 
 df.20.more = filter(main.data, numberturns >= rmTurns)
-## how many levels after 20 turns, also same data as models, removing extraordinarily long single utterances
+## how many levels after 20 turns, also same data as models
 levels2 = filter(main.data, numberturns >= rmTurns) %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>% select(Team, School, Block, Level, revisited, trophy) %>% distinct(); nrow(levels2)
 
 ```
@@ -208,14 +207,17 @@ durationPlots
 
 Statistical significance tests
 
-```{r}
-levBlotab3 = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
-  dplyr::select(1:8, "numberturns") %>% unique()
 
+```{r, warning=FALSE, message=FALSE, error=FALSE}
 library(lme4)
 library(emmeans)
 library(multcomp)
 library(car)
+```
+
+```{r}
+levBlotab3 = df.20.more %>% filter(utterlen_aligner < 71 & utterlen_target < 71) %>%
+  dplyr::select(1:8, "numberturns") %>% unique()
 
 levBlotab3 = levBlotab3 %>% mutate(TeamRE = paste0(Team, School))
 a1 = lmer(level_duration ~ trophy + (1|TeamRE), levBlotab3); summary(a1); Anova(a1, type = 2)

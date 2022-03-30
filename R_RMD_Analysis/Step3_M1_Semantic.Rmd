@@ -1,6 +1,5 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 3 Model 1: Semantic"
-author: "Nick Duran"
 date: 03/28/22
 output: html_document
 ---
@@ -165,31 +164,6 @@ save.image(file = "semantic_baseline.RData")
 
 
 
-
-
-```{r, echo=FALSE}
-# pz.s = plot_model(lmer_sem2, show.values = TRUE, value.offset = .4,
-#                   group.terms = c(1,1,2,2,2,2,2),
-#                   rm.terms = c("Block.l.Q"),  
-#                   axis.labels = c("ordering_prop"="Utterance order", "Block.l.L"="Block (linear trend)", "aligner_rolecontroller"="Role [controller]", "relative_start_timeZ"="Level start time", "level_durationZ"="Level duration", "utterlen_alignerZ"="Utterance length", "ConceptPoT" = "Concept [PoT]"),
-#                   # title=c("syntax Alignment"),
-#                   digits = 3) + 
-#                   labs(title = "Semantic Alignment",
-#                   subtitle = "Linear Mixed Effects")
-# 
-# pz.s = pz.s + ylim(-0.1, 0.1) +
-# # pz.s = pz.s +
-#   geom_hline(yintercept=0, linetype=3) + 
-#   theme_bw() +
-#   theme(
-#         plot.title=element_text(size=16,face="bold"), # theme_light()
-#         axis.text.y=element_text(size=12),
-#         axis.ticks.y=element_blank(),
-#         axis.text.x=element_text(face="bold"),
-#         axis.title=element_text(size=12,face="bold"),
-#         strip.text.y = element_text(hjust=0,vjust = 1,angle=180,face="bold"))
-# pz.s
-```
 
 
 

@@ -1,7 +1,6 @@
 ---
 title: "Multi-Level Linguistic Alignment in a Dynamic CPS Tasks: Step 1 Features"
-author: "Nick Duran"
-date: 10/14/21
+date: 03/30/22
 output: html_document
 ---
 
@@ -19,8 +18,6 @@ rm(list=ls())
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
 library(tidyverse)
 library(pander)
-
-setwd("/Users/nickduran/Desktop/GitProjects/CPS-ling-align/R_RMD_Analysis/") # CHANGE THIS
 ```
 
 Run the actual data (be sure to update the name of the file to be saved at the end)

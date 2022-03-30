@@ -1,13 +1,10 @@
 # Multi-Level Linguistic Alignment in a Dynamic Collaborative Problem-Solving Task
 
-N Duran, A. Paige, S D'Mello., Others. Cognitive Science.
-
 ## What does this respository and README include?
 
 > - R data analysis code (.Rmd files) that provides a step-by-step tutorial of all statistical procedures
 >   - Also, accompanying the .Rmd code is the knitted HTML output that reproduces results reported in manuscript in an easy-to-read format
 > - Complete input and processed data for running analyses
-> - Data codebook and variable descriptions used in source code to generate analysis (NOT ADDED YET)
 
 ## R data analysis code (.Rmd)
 
@@ -32,15 +29,15 @@ The files in the **R_RMD_Analysis** folder contains the sequence of steps in R t
 
 ## R data analysis output (.HTML)
 
-The files in the **R_HTML_Analysis_Output** folder contains easy-to-read formatted HTML files. To view in web browser, please right-click on each file below to open in a new tab or window.
+The files in the **R_HTML_Analysis_Output** folder contains easy-to-read formatted HTML files. To view in web browser, please right-click on each file below to open in a new tab or window. [For purposes of peer-review, .html files not uploaded on a web server and will need to manually open each file with a web browser]
 
 > **Relevant Files:**
 >
-> - http://dynamicog.org/CPS-align/Step1_Features.html
-> - http://dynamicog.org/CPS-align/Step3_M1_Lexical.html
-> - http://dynamicog.org/CPS-align/Step3_M1_Syntax.html
-> - http://dynamicog.org/CPS-align/Step3_M1_Semantic.html
-> - http://dynamicog.org/CPS-align/Step3_M2_Trophies.html
+> - Step1_Features.html
+> - Step3_M1_Lexical.html
+> - Step3_M1_Syntax.html
+> - Step3_M1_Semantic.html
+> - Step3_M2_Trophies.html
 
 ## Stat R Helper Files (.R)
 
