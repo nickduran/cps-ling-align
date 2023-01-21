@@ -28,7 +28,7 @@ cleanup = function(df) {
   df1$Revisited[is.na(df1$Revisited)] <- "0"
   df1$Revisited = as.integer(df1$Revisited)
   
-  
+
   
   ######   ######   ######   ######   ######  
   ##### Incorrect participant labeling from REV - need to switch to hand-coded gold standard

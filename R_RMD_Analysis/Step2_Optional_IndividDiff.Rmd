@@ -15,11 +15,18 @@ library(pander)
 ```
 
 ```{r}
-person = read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person.csv', sep=",") 
-person = person %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
+person <- read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person.csv', sep=",") 
+person <- person %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
   select(-userID)
-person = person %>% select(c(2, 57, 1, 58, 59, everything()), -school) %>% rename(School_Team = "team")
+person <- person %>% select(c(2, 57, 1, 58, 59, everything()), -school) %>% rename(School_Team = "team")
 ```
+
+
+```{r}
+nrow(person)
+```
+
+
 
 ### Group Makeup / Group Level
 
@@ -39,7 +46,7 @@ person = person %>% select(c(2, 57, 1, 58, 59, everything()), -school) %>% renam
 
 ```{r}
 # let's start with creating the gender classification for each team
-gendem = person %>% 
+gendem <- person %>% 
   group_by(School_Team) %>% 
   mutate(samegen = ifelse(sum(isFemale) == 3 | sum(isMale) == 3, 1, 0)) %>%
   mutate(femdom = ifelse(sum(isFemale) >= 2, 1, 0)) %>%
@@ -56,24 +63,24 @@ gendem = person %>%
 # ok resource for doing this:
 # https://cran.r-project.org/web/packages/philentropy/vignettes/Distances.html
 
-rcols = c("extraversion", "agreeableness", "conscientiousness", "stability", "openness")
-persDiv = c()
-School_Team = c()
+rcols <- c("extraversion", "agreeableness", "conscientiousness", "stability", "openness")
+persDiv <- c()
+School_Team <- c()
 for (i in 1:nrow(person)-1) {
   if (i > 1 && person$School_Team[i] == person$School_Team[i-1] && person$School_Team[i] == person$School_Team[i+1]) {
-    matrixbuild = c()
+    matrixbuild <- c()
     
-    matrixbuild = as.matrix(person[i,rcols]) 
-    matrixbuild = rbind(matrixbuild, as.matrix(person[i-1,rcols]))
-    matrixbuild = rbind(matrixbuild, as.matrix(person[i+1,rcols]))
-    distPer = mean(stats::dist(matrixbuild, method = "euclidean")) 
+    matrixbuild <- as.matrix(person[i,rcols]) 
+    matrixbuild <- rbind(matrixbuild, as.matrix(person[i-1,rcols]))
+    matrixbuild <- rbind(matrixbuild, as.matrix(person[i+1,rcols]))
+    distPer <- mean(stats::dist(matrixbuild, method = "euclidean")) 
     
-    persDiv = c(persDiv, distPer)
-    School_Team = c(School_Team, as.character(person$School_Team[i]))
+    persDiv <- c(persDiv, distPer)
+    School_Team <- c(School_Team, as.character(person$School_Team[i]))
   }
 }
-persDivDF = data.frame(School_Team, persDiv)
-persDivDF = persDivDF
+persDivDF <- data.frame(School_Team, persDiv)
+persDivDF <- persDivDF
 
 ```
 
@@ -92,7 +99,7 @@ persDivDF = persDivDF
   * IMI_PP_value_usefulness_mean 
 
 ```{r}
-individ_measures1 = person %>% select(School_Team, School, Team, participant, PhysicsScorePre, PhysicsScorePost, raceValue, ISWT_collectivism_mean, Lead_ISWT_self_efficacy_mean,
+individ_measures1 <- person %>% select(School_Team, School, Team, participant, PhysicsScorePre, PhysicsScorePost, raceValue, ISWT_collectivism_mean, Lead_ISWT_self_efficacy_mean,
                                       SEP_mean, IMI_PP_interest_enjoyment_mean, IMI_PP_perceived_competance_mean, 
                                       IMI_PP_effort_importance_mean, IMI_PP_pressure_tension_mean, IMI_PP_value_usefulness_mean)
 ```
@@ -101,10 +108,10 @@ individ_measures1 = person %>% select(School_Team, School, Team, participant, Ph
   * XQ_know
 
 ```{r}
-personblock = read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person_block.csv', sep=",")
-personblock = personblock %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
+personblock <- read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person_block.csv', sep=",")
+personblock <- personblock %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
   select(-userID)
-individ_measures2 = personblock %>% select(c(2, 26, 1, 3, 27, 28, 10, 18, -school)) %>% rename(School_Team = "team") %>% filter(Block == "Transfer") %>% select(-Block)
+individ_measures2 <- personblock %>% select(c(2, 26, 1, 3, 27, 28, 10, 18, -school)) %>% rename(School_Team = "team") %>% filter(Block == "Transfer") %>% select(-Block)
 ```
 
 ### Create Master
@@ -112,9 +119,9 @@ individ_measures2 = personblock %>% select(c(2, 26, 1, 3, 27, 28, 10, 18, -schoo
 > the additional variables in one place
 
 ```{r}
-master1 = left_join(individ_measures1,individ_measures2)
-master2 = left_join(master1, persDivDF)
-master3 = left_join(master2, gendem)
+master1 <- left_join(individ_measures1,individ_measures2)
+master2 <- left_join(master1, persDivDF)
+master3 <- left_join(master2, gendem)
 ```
 
 > now add to the main dataset
@@ -123,6 +130,7 @@ master3 = left_join(master2, gendem)
 master3 = master3 %>% select(-School_Team) %>% rename(aligner_score = "participant")
 
 compositeLing_role = read.csv("../Data/Step1_PrepareFeatures.csv", header=TRUE, sep=",")
+ # test1 <- compositeLing_role %>% distinct(Team, School, speaker_target)
 
 compositeLing_role =  left_join(compositeLing_role, master3)
 write.csv(compositeLing_role, "../Data/Step2_Optional_IndividDiff.csv", row.names=FALSE)

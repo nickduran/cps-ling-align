@@ -63,7 +63,7 @@ mergeremove = left_join(PennPOS_remove,StanPOS_remove)
 ```
 
 ```{r, warning=FALSE, message=FALSE, error=FALSE}
-df.merge = left_join(mergekeep,mergeremove)
+df.merge = left_join(mergekeep, mergeremove)
 ```
 
 #### Step 2: Clean-up for variable creation, relabeling for readability, etc.)
@@ -78,6 +78,12 @@ df = cleanup(df.merge)
   * Step1_FilesToIntegrate/SWITCH_PARTICIPANTS.csv
   * Step1_FilesToIntegrate/CPS2_Teams.csv
   * Step1_FilesToIntegrate/Levels_PP_Logs_Lab_Before_Split_by_Trophy.csv
+
+* Important note that CPS2_Teams.csv comes from the official CPS2 folder of processed data and documentation states: "Official list of team IDs" and in here there are only 288 individuals. Six participants (two teams) removed after running Step1_helper.R, problem in that outcomes are not recorded for two teams
+
+```{r}
+trophies = read.csv('../Accompanying_Data/Step1_FilesToIntegrate/Levels_PP_Logs_Lab_Before_Split_by_Trophy.csv', sep=",") 
+```
 
 ```{r}
 df = df %>% select(Team, School, Block, Concept, Goal, Level, trophy, level_duration, relative_start_time, revisited, speaker_target, aligner_score, aligner_role, utter_order, utterlen_target, utterlen_aligner, semantic, lexical_lem1, lexical_tok1, syntax_penn_lem2_nodp, syntax_penn_tok2_nodp, syntax_stan_lem2_nodp, syntax_stan_tok2_nodp, syntax_penn_lem3_nodp, syntax_penn_tok3_nodp, syntax_stan_lem3_nodp, syntax_stan_tok3_nodp)
