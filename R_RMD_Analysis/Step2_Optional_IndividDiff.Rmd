@@ -6,7 +6,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-rm(list=ls())
+rm(list = ls())
 ```
 
 ```{r}
@@ -15,18 +15,28 @@ library(pander)
 ```
 
 ```{r}
-person <- read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person.csv', sep=",") 
-person <- person %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
+person <- read.csv("../Accompanying_Data/Step2_FilesToIntegrate/person.csv", sep = ",")
+person <- person %>%
+  mutate(School = word(userID, 2, sep = "-"), Team = word(userID, 3, sep = "-"), participant = word(userID, 4, sep = "-")) %>%
   select(-userID)
-person <- person %>% select(c(2, 57, 1, 58, 59, everything()), -school) %>% rename(School_Team = "team")
+person <- person %>%
+  select(c(2, 57, 1, 58, 59, everything()), -school) %>%
+  rename(School_Team = "team")
 ```
 
+### Temporary analysis to generate participant level information for paper/revision
 
 ```{r}
-nrow(person)
+compositeLing_role <- read.csv("../Data/Step1_PrepareFeatures.csv", header = TRUE, sep = ",") %>%
+  rename(participant = speaker_target) %>%
+  distinct(Team, School, participant)
+test1 <- left_join(compositeLing_role, person, by = c("Team", "School", "participant")) %>% select(c(1:3, 14, 15:21, 24:25))
+
+# test2 <- test1 %>% summarize(across(c(starts_with("is"), "English_First_Language"), function(x) sum(x, na.rm=TRUE)/n()))
+test2 <- test1 %>% summarize(across(c(starts_with("is"), "English_First_Language"), function(x) sum(x, na.rm = TRUE) / length(na.omit(x))))
+
+sum(na.omit(test1$Age_Integer)) / length(na.omit(test1$Age_Integer))
 ```
-
-
 
 ### Group Makeup / Group Level
 
@@ -46,16 +56,16 @@ nrow(person)
 
 ```{r}
 # let's start with creating the gender classification for each team
-gendem <- person %>% 
-  group_by(School_Team) %>% 
+gendem <- person %>%
+  group_by(School_Team) %>%
   mutate(samegen = ifelse(sum(isFemale) == 3 | sum(isMale) == 3, 1, 0)) %>%
   mutate(femdom = ifelse(sum(isFemale) >= 2, 1, 0)) %>%
-  dplyr::summarize(samegend = mean(samegen), femdomin = mean(femdom)) %>% 
+  dplyr::summarize(samegend = mean(samegen), femdomin = mean(femdom)) %>%
   ungroup()
 ```
 
 ```{r}
-# now, let's create a vector of the big five dimensions for each participant within a team and compute the Euclidean distance 
+# now, let's create a vector of the big five dimensions for each participant within a team and compute the Euclidean distance
 # to do this, let's split the userID column to identify each unique participant [might not be necessary at all]
 # next, group by team and then create the vector
 # next, compute Euclidean between each pair (three pairs in total) and then get the average score
@@ -66,22 +76,21 @@ gendem <- person %>%
 rcols <- c("extraversion", "agreeableness", "conscientiousness", "stability", "openness")
 persDiv <- c()
 School_Team <- c()
-for (i in 1:nrow(person)-1) {
-  if (i > 1 && person$School_Team[i] == person$School_Team[i-1] && person$School_Team[i] == person$School_Team[i+1]) {
+for (i in 1:nrow(person) - 1) {
+  if (i > 1 && person$School_Team[i] == person$School_Team[i - 1] && person$School_Team[i] == person$School_Team[i + 1]) {
     matrixbuild <- c()
-    
-    matrixbuild <- as.matrix(person[i,rcols]) 
-    matrixbuild <- rbind(matrixbuild, as.matrix(person[i-1,rcols]))
-    matrixbuild <- rbind(matrixbuild, as.matrix(person[i+1,rcols]))
-    distPer <- mean(stats::dist(matrixbuild, method = "euclidean")) 
-    
+
+    matrixbuild <- as.matrix(person[i, rcols])
+    matrixbuild <- rbind(matrixbuild, as.matrix(person[i - 1, rcols]))
+    matrixbuild <- rbind(matrixbuild, as.matrix(person[i + 1, rcols]))
+    distPer <- mean(stats::dist(matrixbuild, method = "euclidean"))
+
     persDiv <- c(persDiv, distPer)
     School_Team <- c(School_Team, as.character(person$School_Team[i]))
   }
 }
 persDivDF <- data.frame(School_Team, persDiv)
 persDivDF <- persDivDF
-
 ```
 
 ### Individual Scores
@@ -99,19 +108,30 @@ persDivDF <- persDivDF
   * IMI_PP_value_usefulness_mean 
 
 ```{r}
-individ_measures1 <- person %>% select(School_Team, School, Team, participant, PhysicsScorePre, PhysicsScorePost, raceValue, ISWT_collectivism_mean, Lead_ISWT_self_efficacy_mean,
-                                      SEP_mean, IMI_PP_interest_enjoyment_mean, IMI_PP_perceived_competance_mean, 
-                                      IMI_PP_effort_importance_mean, IMI_PP_pressure_tension_mean, IMI_PP_value_usefulness_mean)
+individ_measures1 <- person %>% select(
+  School_Team, School, Team, participant, PhysicsScorePre, PhysicsScorePost, raceValue, ISWT_collectivism_mean, Lead_ISWT_self_efficacy_mean,
+  SEP_mean, IMI_PP_interest_enjoyment_mean, IMI_PP_perceived_competance_mean,
+  IMI_PP_effort_importance_mean, IMI_PP_pressure_tension_mean, IMI_PP_value_usefulness_mean
+)
 ```
 
   * CPS_and_ITN_mean
   * XQ_know
 
 ```{r}
-personblock <- read.csv('../Accompanying_Data/Step2_FilesToIntegrate/person_block.csv', sep=",")
-personblock <- personblock %>% mutate(School = word(userID, 2, sep="-"), Team = word(userID, 3, sep="-"), participant = word(userID, 4, sep="-")) %>%
+personblock <- read.csv("../Accompanying_Data/Step2_FilesToIntegrate/person_block.csv", sep = ",")
+personblock <- personblock %>%
+  mutate(School = word(userID, 2, sep = "-"), Team = word(userID, 3, sep = "-"), participant = word(userID, 4, sep = "-")) %>%
   select(-userID)
-individ_measures2 <- personblock %>% select(c(2, 26, 1, 3, 27, 28, 10, 18, -school)) %>% rename(School_Team = "team") %>% filter(Block == "Transfer") %>% select(-Block)
+individ_measures2 <- personblock %>%
+  select(c(2, 26, 1, 3, 27, 28, 10, 18, -school)) %>%
+  rename(School_Team = "team") %>%
+  filter(Block == "Transfer") %>%
+  select(-Block)
+# for proportion of who knows who prior to interaction
+# summary(as.factor(individ_measures2$XQ_know))
+# test3 = filter(individ_measures2, XQ_know == 2 | XQ_know == 1)
+
 ```
 
 ### Create Master
@@ -119,7 +139,7 @@ individ_measures2 <- personblock %>% select(c(2, 26, 1, 3, 27, 28, 10, 18, -scho
 > the additional variables in one place
 
 ```{r}
-master1 <- left_join(individ_measures1,individ_measures2)
+master1 <- left_join(individ_measures1, individ_measures2)
 master2 <- left_join(master1, persDivDF)
 master3 <- left_join(master2, gendem)
 ```
@@ -127,14 +147,14 @@ master3 <- left_join(master2, gendem)
 > now add to the main dataset
 
 ```{r}
-master3 = master3 %>% select(-School_Team) %>% rename(aligner_score = "participant")
+master3 <- master3 %>%
+  select(-School_Team) %>%
+  rename(aligner_score = "participant")
 
-compositeLing_role = read.csv("../Data/Step1_PrepareFeatures.csv", header=TRUE, sep=",")
- # test1 <- compositeLing_role %>% distinct(Team, School, speaker_target)
+compositeLing_role <- read.csv("../Data/Step1_PrepareFeatures.csv", header = TRUE, sep = ",")
 
-compositeLing_role =  left_join(compositeLing_role, master3)
-write.csv(compositeLing_role, "../Data/Step2_Optional_IndividDiff.csv", row.names=FALSE)
-
+compositeLing_role <- left_join(compositeLing_role, master3)
+write.csv(compositeLing_role, "../Data/Step2_Optional_IndividDiff.csv", row.names = FALSE)
 ```
 
 
@@ -145,36 +165,16 @@ write.csv(compositeLing_role, "../Data/Step2_Optional_IndividDiff.csv", row.name
 <!-- #### Block-level performance ONLY RELEVANT FOR CODING SCHEME 1 BLOCK LEVEL VARIABLES -->
 
 ```{r}
-# **CPS facets** 
+# **CPS facets**
 #   Construction of Shared Knowledge
 #   Negotiation/Coordination
 #   Maintaining Team Function
- 
+
 # **Objective Performance Scores**
 #   Prop_Gold_Trophies: proportion of the gold trophies they earned in that block; note the max possible number of trophies varies by EcT vs PoT
 #   Prop_Silver_Trophies: proportion of the silver trophies they earned in that block; note the max possible number of trophies varies by EcT vs PoT
 #   Prop_Unique_Trophies: proportion of trophies they earned in that block; note the max possible number of trophies varies by EcT vs PoT
- 
+
 ## ADD THESE FOR FIRST ANALYSIS WHERE CODES WERE DONE AT THE BLOCK RATHER THAN SPLIT LEVELS
 # block_level = personblock %>% select(c(2, 26, 1, 3, 27, 28, COMM, NEG, MAINTAIN, Prop_Gold_Trophies, Prop_Silver_Trophies, Prop_Unique_Trophies, -school)) %>% rename(School_Team = "team") %>% filter(Block != "Transfer")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
